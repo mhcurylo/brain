@@ -7795,8 +7795,44 @@ var _elm_lang$html$Html$summary = _elm_lang$html$Html$node('summary');
 var _elm_lang$html$Html$menuitem = _elm_lang$html$Html$node('menuitem');
 var _elm_lang$html$Html$menu = _elm_lang$html$Html$node('menu');
 
-var _user$project$Main$main = _elm_lang$virtual_dom$Native_VirtualDom.staticProgram(
-	_elm_lang$html$Html$text('Hello, World!'));
+var _user$project$Main$view = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('model.read'),
+			_1: {ctor: '[]'}
+		});
+};
+var _user$project$Main$update = F2(
+	function (msg, model) {
+		var _p0 = msg;
+		return _elm_lang$core$Native_Utils.update(
+			model,
+			{
+				read: {
+					ctor: '::',
+					_0: _p0._0,
+					_1: {ctor: '[]'}
+				}
+			});
+	});
+var _user$project$Main$model = {
+	read: {
+		ctor: '::',
+		_0: 'boo',
+		_1: {ctor: '[]'}
+	}
+};
+var _user$project$Main$main = _elm_lang$html$Html$beginnerProgram(
+	{model: _user$project$Main$model, view: _user$project$Main$view, update: _user$project$Main$update})();
+var _user$project$Main$Model = function (a) {
+	return {read: a};
+};
+var _user$project$Main$Activated = function (a) {
+	return {ctor: 'Activated', _0: a};
+};
 
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};
