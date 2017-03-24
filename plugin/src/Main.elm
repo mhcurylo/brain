@@ -29,11 +29,3 @@ update msg model =
 view : Model -> Html Msg
 view model =
   div [] [text (toString model)]
-
-
-
-port tabUpdated : Signal Activated String
-port tabActivated : Signal Activated String
-
-
-
