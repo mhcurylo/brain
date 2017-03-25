@@ -10,8 +10,8 @@ const fuse = FuseBox.init({
 });
 
 fuse.bundle({
-  "chrome/background.js": "background.ts",
-  "chrome/popup.js": "popup.ts"
+  "chrome/background.js": ">background.ts",
+  "chrome/popup.js": ">popup.ts"
 });
 
 
