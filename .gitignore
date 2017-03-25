@@ -1,2 +1,4 @@
 node_modules
-
+plugin/chrome/*.js
+plugin/chrome/*.js.map
+plugin/.fusebox
