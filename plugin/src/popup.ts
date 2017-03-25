@@ -1,8 +1,11 @@
-import {Maybe} from './lib';
+import {Maybe, fmap} from './lib';
 
-const elm: Maybe<HTMLElement> = Maybe.of(document.getElementById('popup'));
+const elm: Maybe<HTMLElement> = document.getElementById('popup');
 
-elm.map(el => el.innerHTML = "boo");
+const setInnerHtml: (x: string) => (y: HTMLElement) => void =
+    x => y => y.innerHTML = x;
 
+const setBoo = setInnerHtml("boo");
 
+fmap(setBoo)(elm);
 
