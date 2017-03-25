@@ -1,1 +1,4 @@
-import {Maybe} from './lib.ts';
+import {Maybe} from './lib';
+
+console.log('boo');
+console.log('booououou');
