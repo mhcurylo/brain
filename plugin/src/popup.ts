@@ -1,11 +1,24 @@
 import {Maybe, fmap} from './lib';
 
+interface State {
+    readonly urls: string[];
+}
+
+let state: State = {
+    urls: []
+}
+
 const elm: Maybe<HTMLElement> = document.getElementById('popup');
 
 const setInnerHtml: (x: string) => (y: HTMLElement) => void =
     x => y => y.innerHTML = x;
 
-const setBoo = setInnerHtml("boo");
+const updateState = (newState: State) => {
+    state = newState;
 
-fmap(setBoo)(elm);
+    const setUrls = fmap(setInnerHtml(state.urls.join(', ')));
 
+    setUrls(elm);
+};
+
+(<any>window).updateState = updateState;
