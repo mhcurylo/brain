@@ -10,6 +10,11 @@ let state: State = {
 
 const pushStateUrlIO = fmap((x: string): void => {state = {urls: [x]}});
 
+
+function getState(): State {
+    return state;
+}
+
 function broadcast() {
     const views = chrome.extension.getViews();
     views.forEach((view: any) => view.updateState ? view.updateState(state) : '');
@@ -19,16 +24,16 @@ function tabUpdated(tabId: number, changeInfo: chrome.tabs.TabChangeInfo, tab: c
     const url: Maybe<string> = tab.url;
 
     pushStateUrlIO(url + ' UPDATED');
+    broadcast();
 };
 
 function tabActivated(activeInfo: chrome.tabs.TabActiveInfo): void {
     chrome.tabs.get(activeInfo.tabId, tab => {
         pushStateUrlIO(tab.url + ' ACTIVATED');
     });
+    broadcast();
 }
-
-setInterval(broadcast, 10);
 
 chrome.tabs.onUpdated.addListener(tabUpdated);
 chrome.tabs.onActivated.addListener(tabActivated);
-
+(<any>window).getState = getState;

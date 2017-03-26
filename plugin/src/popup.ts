@@ -8,6 +8,12 @@ let state: State = {
     urls: []
 }
 
+const background = chrome.extension.getBackgroundPage();
+const getState = (x: any): State => x.getState();
+const maybeState: Maybe<State> = getState(background);
+
+state = maybeState ? maybeState : state;
+
 const elm: Maybe<HTMLElement> = document.getElementById('popup');
 
 const setInnerHtml: (x: string) => (y: HTMLElement) => void =
@@ -20,5 +26,7 @@ const updateState = (newState: State) => {
 
     setUrls(elm);
 };
+
+updateState(state);
 
 (<any>window).updateState = updateState;
