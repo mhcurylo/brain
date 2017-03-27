@@ -14,5 +14,3 @@ function isNothing(x: any): x is Nothing {
     return (x === null || x === undefined);
 }
 
-
-
