@@ -5,7 +5,7 @@ export interface Place {
 
 export interface PageEvent {
     readonly at: Place;
-    readonly outOf: Place;
+    readonly from: Place;
     readonly req: Place;
     readonly who: string;
 }
@@ -24,8 +24,4 @@ export interface State {
     readonly who: string;
 }
 
-export const initState: State = {
-    pages: {},
-    who: 'Waiting for name'
-}
 

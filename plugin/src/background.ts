@@ -1,5 +1,6 @@
 import {Maybe, fmap} from './lib';
-import {State, initState} from './state';
+import {State} from './state.interface';
+import {initState} from './state.init';
 
 let state: State = initState;
 

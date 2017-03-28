@@ -10,7 +10,8 @@ const fuse = FuseBox.init({
 });
 
 fuse.bundle({
-  "tests/lib.spec.js": ">lib.spec.ts"
+  "tests/lib.spec.js": ">lib.spec.ts",
+  "tests/store.spec.js": ">store.spec.ts"
 });
 
 
