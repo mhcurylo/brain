@@ -1,4 +1,4 @@
-import {Maybe, fmap} from './lib';
+import {Maybe, fmap} from './libs/maybe';
 
 interface State {
     readonly urls: string[];

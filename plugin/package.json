@@ -4,9 +4,11 @@
   "description": "",
   "main": "",
   "scripts": {
-    "start": "node fuse.js"
+    "start": "echo 'build or test'",
+    "test": "node fuse.tests.js && ./node_modules/.bin/mocha ./tests",
+    "build": "node fuse.js"
   },
-  "author": "",
+  "author": "mhcurylo",
   "license": "ISC",
   "devDependencies": {
     "@types/chai": "^3.4.35",
