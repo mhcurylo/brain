@@ -1,8 +1,20 @@
-import {Store, MetaState, ActionStore, ActionEvent} from './store.interface';
+import { Store, MetaState, ActionStore, ActionEvent, Reducer } from './store.interface';
+
+
+function runSubscriptions<T>(state: MetaState<T>, event: ActionEvent): void {
+    state.subscriptions.forEach(subscription => subscription(state, event));
+};
+
+function runReducers<T>(state: MetaState<T>, event: ActionEvent): MetaState<T> {
+    return state.reducers.reduce((p: MetaState<T>, c: Reducer<MetaState<T>>) => c(p, event), state);
+};
 
 export function createStore<T>(state: MetaState<T>): ((event: ActionEvent) => ActionStore<T>) {
+
     return function actionStore<T>(event: ActionEvent): ActionStore<T> {
-        const newState = state;
+        const newState = runReducers(state, event);
+
+        runSubscriptions(newState, event);
 
         return createStore(newState);
     };
