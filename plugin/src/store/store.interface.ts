@@ -8,7 +8,7 @@ export interface Subscription<T> {
 }
 
 export interface Reducer<M> {
-    (mstate: M, action: ActionEvent): M;
+    (state: M, action: ActionEvent): M;
 }
 
 export interface MetaState<T> {

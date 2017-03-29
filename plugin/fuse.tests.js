@@ -11,6 +11,7 @@ const fuse = FuseBox.init({
 
 fuse.bundle({
   "tests/store.spec.js": ">store/store.spec.ts"
+//  "tests/pages.reducer.spec.js": ">pages/pages.reducer.spec.ts"
 });
 
 
