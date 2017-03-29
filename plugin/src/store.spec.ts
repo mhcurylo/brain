@@ -20,7 +20,7 @@ describe('Store', () => {
 
     const reducer: Reducer<MState> = (mstate: MState, action: ActionEvent) => action.kind === 'inc' ? { ...mstate, state: { count: mstate.state.count + 1 } } : mstate;
 
-    const getStateAndAction: Subscription<MState> = (mstate: MState, action: ActionEvent): void => { presentState = mstate.state; lastAction = action };
+    const getStateAndAction: Subscription<State> = (state: State, action: ActionEvent): void => { presentState = state; lastAction = action };
 
     const initState = {
         count: 0

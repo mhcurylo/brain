@@ -2,7 +2,7 @@ import { Store, MetaState, ActionStore, ActionEvent, Reducer } from './store.int
 
 
 function runSubscriptions<T>(state: MetaState<T>, event: ActionEvent): void {
-    state.subscriptions.forEach(subscription => subscription(state, event));
+    state.subscriptions.forEach(subscription => subscription(state.state, event));
 };
 
 function runReducers<T>(state: MetaState<T>, event: ActionEvent): MetaState<T> {

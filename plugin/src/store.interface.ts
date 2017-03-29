@@ -3,8 +3,8 @@ export interface ActionEvent {
     readonly payload: object;
 }
 
-export interface Subscription<M> {
-    (mstate: M, action: ActionEvent): void;
+export interface Subscription<T> {
+    (state: T, action: ActionEvent): void;
 }
 
 export interface Reducer<M> {
@@ -14,7 +14,7 @@ export interface Reducer<M> {
 export interface MetaState<T> {
     readonly reducers: Array<Reducer<MetaState<T>>>;
     readonly state: T;
-    readonly subscriptions: Array<Subscription<MetaState<T>>>;
+    readonly subscriptions: Array<Subscription<T>>;
 }
 
 export interface ActionStore<T> {
