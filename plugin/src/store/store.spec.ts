@@ -1,6 +1,7 @@
 import { Store, Reducer, Subscription, ActionStore, ActionEvent, MetaState } from './store.interface';
 import { createStore } from './store';
 import { should } from 'chai';
+import { emptyAction, incAction, reducer, createMetaStateFixture} from '../testing/fixtures';
 
 should();
 
@@ -11,26 +12,11 @@ interface State {
 type MState = MetaState<State>;
 
 describe('Store', () => {
-
-    const emptyAction: ActionEvent = { kind: '', payload: {} }
-    const incAction: ActionEvent = { kind: 'inc', payload: {} }
-
     let presentState: State = { count: 3 };
     let lastAction: ActionEvent = incAction;
 
-    const reducer: Reducer<MState> = (mstate: MState, action: ActionEvent) => action.kind === 'inc' ? { ...mstate, state: { count: mstate.state.count + 1 } } : mstate;
-
     const getStateAndAction: Subscription<State> = (state: State, action: ActionEvent): void => { presentState = state; lastAction = action };
-
-    const initState = {
-        count: 0
-    };
-
-    const metaState: MetaState<State> = {
-        reducers: [reducer],
-        state: initState,
-        subscriptions: [getStateAndAction]
-    };
+    const metaState: MetaState<State> = createMetaStateFixture([getStateAndAction]);
 
     beforeEach(() => {
         presentState = { count: 3 };
