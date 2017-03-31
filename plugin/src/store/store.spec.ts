@@ -1,7 +1,7 @@
-import { Store, Reducer, Subscription, ActionStore, ActionEvent, MetaState } from './store.interface';
-import { createStore } from './store';
 import { should } from 'chai';
-import { emptyAction, incAction, reducer, createMetaStateFixture, State, MState} from '../testing/fixtures';
+import { createMetaStateFixture, emptyAction, incAction, MState, reducer, State} from '../testing/fixtures';
+import { createStore } from './store';
+import { ActionEvent, ActionStore, MetaState, Reducer, Store,  Subscription } from './store.interface';
 
 should();
 
@@ -9,7 +9,11 @@ describe('Store', () => {
     let presentState: State = { count: 3 };
     let lastAction: ActionEvent = incAction;
 
-    const getStateAndAction: Subscription<State> = (state: State, action: ActionEvent): void => { presentState = state; lastAction = action };
+    const getStateAndAction: Subscription<State> = (state: State, action: ActionEvent): void => {
+        presentState = state;
+        lastAction = action;
+    };
+
     const metaState: MetaState<State> = createMetaStateFixture([getStateAndAction]);
 
     beforeEach(() => {
@@ -35,7 +39,10 @@ describe('Store', () => {
         });
 
         it('actionStore should work with multiple subscriptions', () => {
-            const store = createStore({...metaState, subscriptions: [getStateAndAction, getStateAndAction, getStateAndAction]});
+            const store = createStore({
+                    ...metaState,
+                subscriptions: [getStateAndAction, getStateAndAction, getStateAndAction],
+            });
             store(emptyAction);
 
             presentState.should.eql({ count: 0 });

@@ -1,1 +1,1 @@
-import { Reducer, ActionEvent, MetaState } from '../store/store.interface';
+import { ActionEvent, MetaState, Reducer } from '../store/store.interface';

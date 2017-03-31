@@ -24,5 +24,3 @@ export interface ActionStore<T> {
 export interface Store<T> {
     (state: MetaState<T>): ((event: ActionEvent) => ActionStore<T>);
 }
-
-

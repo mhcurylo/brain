@@ -1,11 +1,11 @@
-import {Maybe, fmap} from './libs/maybe';
+import {fmap, Maybe} from './libs/maybe';
 
 interface State {
     readonly urls: string[];
 }
 
 let state: State = {
-    urls: []
+    urls: [],
 }
 
 const background = chrome.extension.getBackgroundPage();
@@ -17,7 +17,7 @@ state = maybeState ? maybeState : state;
 const elm: Maybe<HTMLElement> = document.getElementById('popup');
 
 const setInnerHtml: (x: string) => (y: HTMLElement) => void =
-    x => y => y.innerHTML = x;
+    (x) => (y) => y.innerHTML = x;
 
 const updateState = (newState: State) => {
     state = newState;

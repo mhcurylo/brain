@@ -23,5 +23,3 @@ export interface State {
     readonly pages: Pages;
     readonly who: string;
 }
-
-
