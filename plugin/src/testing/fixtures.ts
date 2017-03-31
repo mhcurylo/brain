@@ -1,5 +1,5 @@
-import { Store, Reducer, Subscription, ActionStore, ActionEvent, MetaState } from './store.interface';
-import { createStore } from './store';
+import { Store, Reducer, Subscription, ActionStore, ActionEvent, MetaState } from '../store/store.interface';
+import { createStore } from '../store/store';
 import { should } from 'chai';
 
 export interface State {
@@ -8,7 +8,7 @@ export interface State {
 
 export type MState = MetaState<State>;
 
-export const initState = {
+export const initState: State = {
     count: 0
 };
 

@@ -1,15 +1,9 @@
 import { Store, Reducer, Subscription, ActionStore, ActionEvent, MetaState } from './store.interface';
 import { createStore } from './store';
 import { should } from 'chai';
-import { emptyAction, incAction, reducer, createMetaStateFixture} from '../testing/fixtures';
+import { emptyAction, incAction, reducer, createMetaStateFixture, State, MState} from '../testing/fixtures';
 
 should();
-
-interface State {
-    count: number;
-}
-
-type MState = MetaState<State>;
 
 describe('Store', () => {
     let presentState: State = { count: 3 };

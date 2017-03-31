@@ -10,7 +10,8 @@ const fuse = FuseBox.init({
 });
 
 fuse.bundle({
-  "tests/store.spec.js": ">store/store.spec.ts"
+  "tests/store.spec.js": ">store/store.spec.ts",
+  "tests/liftReducer.spec.js": ">reducers/liftReducer.spec.ts"
 //  "tests/pages.reducer.spec.js": ">pages/pages.reducer.spec.ts"
 });
 
