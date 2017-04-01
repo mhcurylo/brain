@@ -24,7 +24,7 @@ export const createMetaStateFixture = (subscriptions: Array<Subscription<CountSt
     reducers: [reducer],
     state: initState,
     subscriptions,
-});
+})
 
 export const placeOfErr: Place = {
     title: 'A place of err',
@@ -44,7 +44,7 @@ export const pageEventAction: PageEventAction = {
         req: placeOfErr,
         who: 'panda',
     },
-};
+}
 
 export const initStateWithPages: State = {
     pages: {
