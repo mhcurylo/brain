@@ -6,7 +6,8 @@
   "scripts": {
     "start": "echo 'build or test'",
     "test": "node fuse.tests.js && ./node_modules/.bin/mocha ./tests",
-    "build": "node fuse.js"
+    "build": "node fuse.js",
+    "lint": "tslint -c tslint.json src/**/*"
   },
   "author": "mhcurylo",
   "license": "ISC",

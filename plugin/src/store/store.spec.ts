@@ -1,20 +1,20 @@
 import { should } from 'chai';
-import { createMetaStateFixture, emptyAction, incAction, MState, reducer, State} from '../testing/fixtures';
+import { CountState, createMetaStateFixture, emptyAction, incAction, MState, reducer} from '../testing/fixtures';
 import { createStore } from './store';
 import { ActionEvent, ActionStore, MetaState, Reducer, Store,  Subscription } from './store.interface';
 
 should();
 
 describe('Store', () => {
-    let presentState: State = { count: 3 };
+    let presentState: CountState = { count: 3 };
     let lastAction: ActionEvent = incAction;
 
-    const getStateAndAction: Subscription<State> = (state: State, action: ActionEvent): void => {
+    const getStateAndAction: Subscription<CountState> = (state: CountState, action: ActionEvent): void => {
         presentState = state;
         lastAction = action;
     };
 
-    const metaState: MetaState<State> = createMetaStateFixture([getStateAndAction]);
+    const metaState: MetaState<CountState> = createMetaStateFixture([getStateAndAction]);
 
     beforeEach(() => {
         presentState = { count: 3 };
