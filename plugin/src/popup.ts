@@ -1,32 +1,37 @@
 import {fmap, Maybe} from './libs/maybe';
+import { Page, PageEvent, Place, State } from './state/state.interface';
 
-interface State {
-    readonly urls: string[];
-}
-
-let state: State = {
-    urls: [],
-}
-
-const background = chrome.extension.getBackgroundPage();
-const getState = (x: any): State => x.getState();
-const maybeState: Maybe<State> = getState(background);
-
-state = maybeState ? maybeState : state;
+let viewState: Maybe<Page> = null;
 
 const elm: Maybe<HTMLElement> = document.getElementById('popup');
 
-const setInnerHtml: (x: string) => (y: HTMLElement) => void =
-    (x) => (y) => y.innerHTML = x;
+const renderPlace = (place: Place) => `<a href="${place.url}">${place.title}</a>`;
+const renderEvent = (event: PageEvent) =>
+    `${event.who} arrived at ${renderPlace(event.at)} from  ${renderPlace(event.from)}`;
+const renderEvents = (events: PageEvent[]) => events.map(renderEvent).join('<br>');
+const renderPage = (page: Page) => `<h5>${page.at.title}</h5> ${renderEvents(page.events)}`;
+
+const redraw = () => {
+    if (viewState && elm) {
+        elm.innerHTML = renderPage(viewState);
+    }
+}
 
 const updateState = (newState: State) => {
-    state = newState;
+    const setState = fmap((url: string) => viewState = newState.pages[url]);
 
-    const setUrls = fmap(setInnerHtml(state.urls.join(', ')));
+    chrome.tabs.query({active: true, lastFocusedWindow: true}, (tabs) => {
+        const url: Maybe<string> = tabs[0].url;
 
-    setUrls(elm);
+        setState(url);
+        redraw();
+    });
 };
 
-updateState(state);
-
 (<any>window).updateState = updateState;
+
+const background = chrome.extension.getBackgroundPage();
+
+if (background) {
+    (<any>background).forceUpdate();
+};
