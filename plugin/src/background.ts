@@ -40,13 +40,6 @@ function forceUpdate(): void {
     store = store({ kind: '', payload: {} })
 }
 
-function tabUpdated(tabId: number, changeInfo: chrome.tabs.TabChangeInfo, tab: chrome.tabs.Tab): void {
-    const url: Maybe<string> = tab.url;
-    const title: Maybe<string> = tab.title;
-
-    arriveAtNewPlace(url, title);
-};
-
 function tabActivated(activeInfo: chrome.tabs.TabActiveInfo): void {
     chrome.tabs.get(activeInfo.tabId, (tab) => {
         arriveAtNewPlace(tab.url, tab.title);
@@ -54,5 +47,4 @@ function tabActivated(activeInfo: chrome.tabs.TabActiveInfo): void {
 }
 
 (<any>window).forceUpdate = forceUpdate;
-chrome.tabs.onUpdated.addListener(tabUpdated);
 chrome.tabs.onActivated.addListener(tabActivated);

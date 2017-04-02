@@ -8,10 +8,12 @@ export interface PageEvent {
     readonly from: Place;
     readonly req: Place;
     readonly who: string;
+    readonly when: number;
 }
 
 export interface Page {
     readonly at: Place;
+    readonly showed: number;
     readonly events: PageEvent[];
 }
 
