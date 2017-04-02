@@ -42,6 +42,7 @@ export const pageEventAction: PageEventAction = {
         at: placeOfErr,
         from: placeOfTher,
         req: placeOfErr,
+        when: 13424559,
         who: 'panda',
     },
 }
@@ -51,10 +52,12 @@ export const initStateWithPages: State = {
         'http://here.there.er': {
             at: placeOfErr,
             events: [pageEventAction.payload],
+            shown: 13424999,
         },
         'http://there.er': {
             at: placeOfTher,
             events: [],
+            shown: 0,
         },
     },
     who: 'meah',

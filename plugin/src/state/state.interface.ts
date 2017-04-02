@@ -13,7 +13,7 @@ export interface PageEvent {
 
 export interface Page {
     readonly at: Place;
-    readonly showed: number;
+    readonly shown: number;
     readonly events: PageEvent[];
 }
 

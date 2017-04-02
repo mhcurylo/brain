@@ -10,7 +10,7 @@ export const addPageEventAction = (state: State, {payload}: PageEventAction) => 
         const targetPage = {...pages[targetUrl], events};
         pages = {...pages, [targetUrl]: targetPage};
     } else {
-        pages = {...pages, [targetUrl]: {at: payload.req, events: [payload]}};
+        pages = {...pages, [targetUrl]: {at: payload.req, shown: 0,  events: [payload]}};
     }
 
     return {...state, pages};

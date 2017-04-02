@@ -23,6 +23,7 @@ describe('addPageEvent', () => {
         newState.pages['http://here.there.er'].should.eql({
             at: placeOfErr,
             events: [pageEventAction.payload],
+            shown: 0,
         });
     });
 
@@ -32,6 +33,7 @@ describe('addPageEvent', () => {
         newState.pages['http://here.there.er'].should.eql({
             at: placeOfErr,
             events: [pageEventAction.payload, pageEventAction.payload],
+            shown: initStateWithPages.pages['http://here.there.er'].shown,
         });
     });
 });

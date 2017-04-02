@@ -14,6 +14,7 @@ describe('pageReducer', () => {
         newState.pages['http://here.there.er'].should.eql({
             at: placeOfErr,
             events: [pageEventAction.payload],
+            shown: 0,
         });
     });
 
