@@ -13,6 +13,7 @@ fuse.bundle({
   "tests/store.spec.js": ">store/store.spec.ts",
   "tests/liftReducer.spec.js": ">reducers/liftReducer.spec.ts",
   "tests/addPageEvent.spec.js": ">reducers/pages/actions/addPageEvent.action.spec.ts",
+  "tests/pageShownEvent.spec.js": ">reducers/pages/actions/pageShownEvent.action.spec.ts",
   "tests/action.creators.spec.js": ">reducers/pages/actions/action.creators.spec.ts",
   "tests/pages.reducer.spec.js": ">reducers/pages/pages.reducer.spec.ts",
 });

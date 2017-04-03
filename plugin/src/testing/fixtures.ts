@@ -1,5 +1,5 @@
 import { should } from 'chai';
-import { PageEventAction } from '../reducers/pages/actions/actions.interface';
+import { PageEventAction, PageShownAction } from '../reducers/pages/actions/actions.interface';
 import { Place, State } from '../state/state.interface';
 import { createStore } from '../store/store';
 import { ActionEvent, ActionStore, MetaState, Reducer, Store, Subscription } from '../store/store.interface';
@@ -47,12 +47,20 @@ export const pageEventAction: PageEventAction = {
     },
 }
 
+export const pageShownAction: PageShownAction = {
+    kind: 'PAGE_SHOWN_ACTION',
+    payload: {
+        place: placeOfErr,
+        shown: 13424959,
+    },
+}
+
 export const initStateWithPages: State = {
     pages: {
         'http://here.there.er': {
             at: placeOfErr,
             events: [pageEventAction.payload],
-            shown: 13424999,
+            shown: 13424559,
         },
         'http://there.er': {
             at: placeOfTher,

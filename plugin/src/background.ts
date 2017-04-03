@@ -56,11 +56,8 @@ function forceUpdate(): void {
     store = store({ kind: '', payload: {} })
 }
 
-function tabActivated(activeInfo: chrome.tabs.TabActiveInfo): void {
-    chrome.tabs.get(activeInfo.tabId, (tab) => {
-        arriveAtNewPlace(tab.url, tab.title);
-    });
-}
+const tabActivated = (activeInfo: chrome.tabs.TabActiveInfo): void =>
+    chrome.tabs.get(activeInfo.tabId, (tab) => arriveAtNewPlace(tab.url, tab.title));
 
 (<any>window).forceUpdate = forceUpdate;
 chrome.tabs.onActivated.addListener(tabActivated);
