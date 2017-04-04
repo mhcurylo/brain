@@ -45,19 +45,19 @@ function updateBadge(state: State, action: ActionEvent) {
         if (url && id && state.pages[url]) {
             const page: Page = state.pages[url];
             const shown: number = page.shown;
-            const text: string =  page.events.filter((e: PageEvent): boolean => e.when > shown).length.toString();
-
+            const newEvents: number =  page.events.filter((e: PageEvent): boolean => e.when > shown).length;
+            const text: string = newEvents ? newEvents.toString() : '';
             chrome.browserAction.setBadgeText({text});
         }
     });
 };
 
-function forceUpdate(): void {
-    store = store({ kind: '', payload: {} })
+function next(action: ActionEvent): void {
+    store = store(action);
 }
 
 const tabActivated = (activeInfo: chrome.tabs.TabActiveInfo): void =>
     chrome.tabs.get(activeInfo.tabId, (tab) => arriveAtNewPlace(tab.url, tab.title));
 
-(<any>window).forceUpdate = forceUpdate;
+(<any>window).next = next;
 chrome.tabs.onActivated.addListener(tabActivated);

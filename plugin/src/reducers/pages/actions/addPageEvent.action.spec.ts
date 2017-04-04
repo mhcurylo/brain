@@ -11,8 +11,6 @@ describe('addPageEvent', () => {
     it('should not modify the old state, but create a new one', () => {
         const newState: State = addPageEventAction(initState, pageEventAction);
 
-        initState.should.equal(initState);
-        initState.should.eql(initState);
         newState.should.not.equal(initState);
         newState.should.not.eql(initState);
     });

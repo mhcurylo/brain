@@ -2,7 +2,7 @@ import { should } from 'chai';
 import { initState } from '../../state/state.init';
 import { State } from '../../state/state.interface';
 import { ActionEvent, Reducer } from '../../store/store.interface';
-import { emptyAction, initStateWithPages, pageEventAction, placeOfErr } from '../../testing/fixtures';
+import { emptyAction, initStateWithPages, pageEventAction, pageShownAction, placeOfErr } from '../../testing/fixtures';
 import { pagesReducer } from './pages.reducer';
 
 should();
@@ -15,6 +15,16 @@ describe('pageReducer', () => {
             at: placeOfErr,
             events: [pageEventAction.payload],
             shown: 0,
+        });
+    });
+
+    it('should update the shown prop of existing page entry', () => {
+        const newState: State = pagesReducer(initStateWithPages, pageShownAction);
+
+        newState.pages['http://here.there.er'].should.eql({
+            at: placeOfErr,
+            events: [pageEventAction.payload],
+            shown: pageShownAction.payload.shown,
         });
     });
 
