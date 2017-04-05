@@ -18,11 +18,11 @@ export const renderBadgeText = (page: Page): string => {
 export const updateBadge = (state: State, action: ActionEvent): void => {
     chrome.tabs.query({active: true, lastFocusedWindow: true}, (tabs) => {
         const url: Maybe<string> = tabs[0].url;
-        const id: Maybe<number> = tabs[0].id;
 
-        if (url && id && state.pages[url]) {
+        if (url && state.pages[url]) {
             const page: Page = state.pages[url];
             const text: string = renderBadgeText(page);
+
             chrome.browserAction.setBadgeText({text});
         }
     });

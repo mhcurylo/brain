@@ -7,6 +7,7 @@ let redraw: boolean = false;
 let viewState: Maybe<Page> = null;
 
 const elm: Maybe<HTMLElement> = document.getElementById('popup');
+const background: Maybe<Window> = chrome.extension.getBackgroundPage();
 
 const updateState = (newState: State): void => {
     const setState = fmap((url: string) => viewState = newState.pages[url]);
@@ -27,12 +28,6 @@ const drawLoop = (): number => requestAnimationFrame(() => {
     drawLoop();
 });
 
-drawLoop();
-
-(<any>window).updateState = updateState;
-
-const background = chrome.extension.getBackgroundPage();
-
 const lastShown = (): void => {
     if (viewState && background) {
         const place: Place = viewState.at;
@@ -41,6 +36,10 @@ const lastShown = (): void => {
         (<any>background).next(pageShownEvent(place, shown));
     }
 };
+
+(<any>window).updateState = updateState;
+
+drawLoop();
 
 if (background) {
     (<any>background).next(emptyEvent());
