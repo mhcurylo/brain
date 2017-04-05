@@ -1,25 +1,12 @@
-import {fmap, Maybe} from './libs/maybe';
+import { fmap, Maybe } from './libs/maybe';
 import { emptyEvent, pageShownEvent } from './reducers/pages/actions/action.creators';
 import { Page, PageEvent, Place, State } from './state/state.interface';
+import { redrawPopup } from './views/popup.view';
 
+let redraw: boolean = false;
 let viewState: Maybe<Page> = null;
 
 const elm: Maybe<HTMLElement> = document.getElementById('popup');
-
-const renderPlace = (place: Place): string => `<a href="${place.url}">${place.title}</a>`;
-const renderEvent = (shown: number) => (event: PageEvent): string => `<div class="${
-event.when > shown ? 'fresh-event' : ''
-}">
-${event.who} arrived at ${renderPlace(event.at)} from  ${renderPlace(event.from)}
-</div>`;
-const renderEvents = (events: PageEvent[], shown: number): string => events.map(renderEvent(shown)).join('');
-const renderPage = (page: Page): string => `<h5>${page.at.title}</h5> ${renderEvents(page.events, page.shown)}`;
-
-const redraw = (): void => {
-    if (viewState && elm) {
-        elm.innerHTML = renderPage(viewState);
-    }
-}
 
 const updateState = (newState: State): void => {
     const setState = fmap((url: string) => viewState = newState.pages[url]);
@@ -28,9 +15,19 @@ const updateState = (newState: State): void => {
         const url: Maybe<string> = tabs[0].url;
 
         setState(url);
-        redraw();
+        redraw = true;
     });
 };
+
+const drawLoop = (): number => requestAnimationFrame(() => {
+    if (redraw && viewState && elm) {
+        redrawPopup(elm, viewState);
+        redraw = false;
+    }
+    drawLoop();
+});
+
+drawLoop();
 
 (<any>window).updateState = updateState;
 
