@@ -3,7 +3,7 @@ import { emptyEvent, pageShownEvent } from './reducers/pages/actions/action.crea
 import { Page, PageEvent, Place, State } from './state/state.interface';
 import { redrawPopup } from './views/popup.view';
 
-let redraw: boolean = false;
+let shouldRedraw: boolean = false;
 let viewState: Maybe<Page> = null;
 
 const elm: Maybe<HTMLElement> = document.getElementById('popup');
@@ -12,23 +12,27 @@ const background: Maybe<Window> = chrome.extension.getBackgroundPage();
 const updateState = (newState: State): void => {
     const setState = fmap((url: string) => viewState = newState.pages[url]);
 
-    chrome.tabs.query({active: true, lastFocusedWindow: true}, (tabs) => {
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
         const url: Maybe<string> = tabs[0].url;
 
         setState(url);
-        redraw = true;
+        shouldRedraw = true;
     });
 };
 
+(<any>window).updateState = updateState;
+
 const drawLoop = (): number => requestAnimationFrame(() => {
-    if (redraw && viewState && elm) {
+    if (shouldRedraw && viewState && elm) {
         redrawPopup(elm, viewState);
-        redraw = false;
+        shouldRedraw = false;
     }
     drawLoop();
 });
 
-const lastShown = (): void => {
+drawLoop();
+
+const onUnload = (): void => {
     if (viewState && background) {
         const place: Place = viewState.at;
         const shown: number = new Date().getTime();
@@ -37,11 +41,7 @@ const lastShown = (): void => {
     }
 };
 
-(<any>window).updateState = updateState;
-
-drawLoop();
-
 if (background) {
     (<any>background).next(emptyEvent());
-    window.addEventListener('unload', lastShown);
+    window.addEventListener('unload', onUnload);
 };

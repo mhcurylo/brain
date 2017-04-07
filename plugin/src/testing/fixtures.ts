@@ -1,6 +1,6 @@
 import { should } from 'chai';
 import { PageEventAction, PageShownAction } from '../reducers/pages/actions/actions.interface';
-import { Place, State } from '../state/state.interface';
+import { Page, Place, State } from '../state/state.interface';
 import { createStore } from '../store/store';
 import { ActionEvent, ActionStore, MetaState, Reducer, Store, Subscription } from '../store/store.interface';
 
@@ -69,4 +69,10 @@ export const initStateWithPages: State = {
         },
     },
     who: 'meah',
+}
+
+export const fullBlownPage: Page = {
+    at: placeOfErr,
+    events: [pageEventAction.payload],
+    shown: 13424559,
 }
