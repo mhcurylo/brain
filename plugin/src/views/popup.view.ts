@@ -2,13 +2,22 @@ import { Page, PageEvent, Place, State } from '../state/state.interface';
 
 const renderPlace = (place: Place): string => `<a href="${place.url}">${place.title}</a>`;
 
-const renderEvent = (shown: number) => (event: PageEvent): string => `<div class="${
-event.when > shown ? 'fresh-event' : ''
-}">${event.who} arrived at ${renderPlace(event.at)} from ${renderPlace(event.from)}</div>`;
+const renderEventText = (url: string, {who, at, req, from}: PageEvent) => {
+    if (url === at.url) {
+        return `${who} arrived from ${renderPlace(from)}`;
+    } else if (url === from.url) {
+        return `${who} departed for ${renderPlace(at)}`;
+    } else {
+        return `${who} travelled from ${renderPlace(from)} to ${renderPlace(at)}`;
+    }
+};
 
-const renderEvents = (events: PageEvent[], shown: number): string => events.map(renderEvent(shown)).join('');
+const renderEvent = (shown: number, url: string) => (event: PageEvent): string => `<div class="${
+event.when > shown ? 'fresh-event' : ''}">${renderEventText(url, event)}</div>`;
 
-export const renderPopup = (page: Page): string => `<h5>${page.at.title}</h5> ${renderEvents(page.events, page.shown)}`;
+const renderEvents = ({events, shown, at}: Page): string => events.map(renderEvent(shown, at.url)).join('');
+
+export const renderPopup = (page: Page): string => `<h5>${page.at.title}</h5> ${renderEvents(page)}`;
 
 export const redrawPopup = (elm: HTMLElement, pageState: Page): void => {
     elm.innerHTML = renderPopup(pageState);
