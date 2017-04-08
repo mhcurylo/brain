@@ -1,12 +1,6 @@
-export interface Func1<A, Z> {
-    (a: A): Z
-}
-export interface Func2<A, B, Z> {
-    (a: A, b: B): Z
-}
-export interface Func3<A, B, C, Z> {
-    (a: A, b: B, c: C): Z
-}
+type Func1<A, Z> = (a: A) => Z
+type Func2<A, B, Z> = (a: A, b: B) => Z
+type Func3<A, B, C, Z> = (a: A, b: B, c: C) => Z
 
 type Func<A, B, C, Z> = Func1<A, Z> | Func2<A, B, Z> | Func3<A, B, C, Z>
 
@@ -19,7 +13,7 @@ export function fmap<A, B, Z>(f: Func2<A, B, Z>): Func2<Maybe<A>, Maybe<B>, Mayb
 export function fmap<A, B, C, Z>(f: Func3<A, B, C, Z>): Func3<Maybe<A>, Maybe<B>, Maybe<C>, Maybe<Z>>;
 export function fmap(f: Function): Function {
     return (...args: any[]) => !args.some(isNothing) ? f.apply(null, args) : null;
-};
+}
 
 function isNothing(x: any): x is Nothing {
     return (x === null || x === undefined);

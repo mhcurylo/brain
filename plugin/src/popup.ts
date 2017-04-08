@@ -20,7 +20,7 @@ const updateState = (newState: State): void => {
     });
 };
 
-(<any>window).updateState = updateState;
+(window as any).updateState = updateState;
 
 const drawLoop = (): number => requestAnimationFrame(() => {
     if (shouldRedraw && viewState && elm) {
@@ -37,11 +37,11 @@ const onUnload = (): void => {
         const place: Place = viewState.at;
         const shown: number = new Date().getTime();
 
-        (<any>background).next(pageShownEvent(place, shown));
+        (background as any).next(pageShownEvent(place, shown));
     }
 };
 
 if (background) {
-    (<any>background).next(emptyEvent());
+    (background as any).next(emptyEvent());
     window.addEventListener('unload', onUnload);
-};
+}

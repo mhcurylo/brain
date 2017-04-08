@@ -1,7 +1,7 @@
 import { should } from 'chai';
 import { Page, Place, State } from '../state/state.interface';
 import { fullBlownPage, pandaArrived, pandaDeparted, pandaTraveled } from '../testing/fixtures';
-import { redrawPopup, renderPopup } from './popup.view';
+import { renderPopup } from './popup.view';
 
 should();
 

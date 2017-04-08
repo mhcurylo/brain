@@ -2,7 +2,7 @@ import { Page, PageEvent, Place, State } from '../state/state.interface';
 
 const renderPlace = (place: Place): string => `<a href="${place.url}">${place.title}</a>`;
 
-const renderEventText = (url: string, {who, at, req, from}: PageEvent) => {
+const renderEventText = (url: string, { who, at, req, from }: PageEvent) => {
     if (url === at.url) {
         return `${who} arrived from ${renderPlace(from)}`;
     } else if (url === from.url) {
@@ -13,9 +13,9 @@ const renderEventText = (url: string, {who, at, req, from}: PageEvent) => {
 };
 
 const renderEvent = (shown: number, url: string) => (event: PageEvent): string => `<div class="${
-event.when > shown ? 'fresh-event' : ''}">${renderEventText(url, event)}</div>`;
+    event.when > shown ? 'fresh-event' : ''}">${renderEventText(url, event)}</div>`;
 
-const renderEvents = ({events, shown, at}: Page): string => events.map(renderEvent(shown, at.url)).join('');
+const renderEvents = ({ events, shown, at }: Page): string => events.map(renderEvent(shown, at.url)).join('');
 
 export const renderPopup = (page: Page): string => `<h5>${page.at.title}</h5> ${renderEvents(page)}`;
 

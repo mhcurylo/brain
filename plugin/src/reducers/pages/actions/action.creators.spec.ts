@@ -15,7 +15,8 @@ describe('Action creators', () => {
     })
     describe('PageShownAction action creator', () => {
         it('should take data and return a PageShownAction', () => {
-            const action: PageShownAction = pageShownEvent(pageShownAction.payload.place, pageShownAction.payload.shown);
+            const action: PageShownAction = pageShownEvent(pageShownAction.payload.place,
+                                                           pageShownAction.payload.shown);
 
             action.should.be.eql(pageShownAction);
         });

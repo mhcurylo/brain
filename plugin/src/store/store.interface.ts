@@ -3,13 +3,9 @@ export interface ActionEvent {
     readonly payload: object;
 }
 
-export interface Subscription<T> {
-    (state: T, action: ActionEvent): void;
-}
+export type Subscription<T> = (state: T, action: ActionEvent) => void;
 
-export interface Reducer<M> {
-    (state: M, action: ActionEvent): M;
-}
+export type Reducer<M> = (state: M, action: ActionEvent) => M;
 
 export interface MetaState<T> {
     readonly reducers: Array<Reducer<MetaState<T>>>;
@@ -17,10 +13,6 @@ export interface MetaState<T> {
     readonly subscriptions: Array<Subscription<T>>;
 }
 
-export interface ActionStore<T> {
-    (event: ActionEvent): ActionStore<T>;
-}
+export type ActionStore<T> = (event: ActionEvent) => ActionStore<T>;
 
-export interface Store<T> {
-    (state: MetaState<T>): ((event: ActionEvent) => ActionStore<T>);
-}
+export type Store<T> = (state: MetaState<T>) => (event: ActionEvent) => ActionStore<T>;

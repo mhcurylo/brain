@@ -23,7 +23,7 @@ const next: ((action: ActionEvent) => void) = (() => {
     return (action: ActionEvent): void => { store = store(action) };
 })();
 
-(<any>window).next = next;
+(window as any).next = next;
 
 const arriveAtNewPlace = fmap((url: string, title: string): void => {
     const place: Place = {
