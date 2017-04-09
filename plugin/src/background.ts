@@ -1,9 +1,11 @@
 import { next } from './app/app';
 import { fmap, Maybe } from './libs/maybe';
 import { addPageEvent } from './reducers/pages/actions/action.creators';
-import { Page, PageEvent, Place} from './state/state.interface';
+import { Page, PageEvent, Place } from './state/state.interface';
 
 (window as any).next = next;
+
+// MOCK FOR NOW
 
 const arriveAtNewPlace = fmap((url: string, title: string): void => {
     const place: Place = {
@@ -22,7 +24,19 @@ const arriveAtNewPlace = fmap((url: string, title: string): void => {
     next((addPageEvent(pageEvent)));
 });
 
-const tabActivated = (activeInfo: chrome.tabs.TabActiveInfo): void =>
-    chrome.tabs.get(activeInfo.tabId, (tab) => arriveAtNewPlace(tab.url, tab.title));
+// SERVER COMMUNICATION
+
+const ws = new WebSocket('ws://localhost:3000/');
+
+ws.onmessage = console.log.bind(console);
+
+// ASSIGNING LISTENERS
+
+const tabActivated = (activeInfo: chrome.tabs.TabActiveInfo): void => {
+    chrome.tabs.get(activeInfo.tabId, ({ url, title }: chrome.tabs.Tab) => {
+        arriveAtNewPlace(url, title);
+        ws.send(JSON.stringify({ url, title }))
+    });
+};
 
 chrome.tabs.onActivated.addListener(tabActivated);
