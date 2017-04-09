@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
         "module": "commonjs",
+        "lib": ["es2016", "DOM"],
         "noImplicitAny": true,
         "removeComments": true,
         "strictNullChecks": true,

@@ -30,12 +30,16 @@ const ws = new WebSocket('ws://localhost:3000/');
 
 ws.onmessage = console.log.bind(console);
 
+ws.onopen = () => ws.send('Hello Brain');
+
 // ASSIGNING LISTENERS
 
 const tabActivated = (activeInfo: chrome.tabs.TabActiveInfo): void => {
     chrome.tabs.get(activeInfo.tabId, ({ url, title }: chrome.tabs.Tab) => {
         arriveAtNewPlace(url, title);
-        ws.send(JSON.stringify({ url, title }))
+        if (ws.OPEN) {
+            //ws.send(JSON.stringify({ url, title }))
+        }
     });
 };
 
