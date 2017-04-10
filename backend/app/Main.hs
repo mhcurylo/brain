@@ -24,14 +24,15 @@ app = WS.websocketsOr WS.defaultConnectionOptions wsApp backupApp
         msg <- WS.receiveData conn
         print "Connected"
         TIO.putStr msg
+        WS.sendTextData conn ("You?" :: T.Text)
         case msg of
           "Hello Brain" -> connectWithBrain conn
-          _ -> WS.sendTextData conn "You do not know us."
+          _ -> WS.sendTextData conn ("You do not know us." :: T.Text)
 
 connectWithBrain :: WS.Connection -> IO ()
-connectWithBrain = do
-  WS.sendTextData conn "YO!"
-  WS.sendTextData conn "YO!"
+connectWithBrain conn = do
+  WS.sendTextData conn ("YO?" :: T.Text)
+  WS.sendTextData conn ("YO?" :: T.Text)
 
 backupApp :: Wai.Application
 backupApp _ respond = respond $ Wai.responseLBS Http.status400 [] "Not a WebSocket request"

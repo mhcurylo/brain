@@ -26,19 +26,35 @@ const arriveAtNewPlace = fmap((url: string, title: string): void => {
 
 // SERVER COMMUNICATION
 
-const ws = new WebSocket('ws://localhost:3000/');
+let ws: WebSocket = serverConnect('ws://localhost:3000');
+let waitingForOpen: string[] = [];
 
-ws.onmessage = console.log.bind(console);
+function serverConnect(url: string): WebSocket {
+    const nws = new WebSocket(url);
 
-ws.onopen = () => ws.send('Hello Brain');
+    nws.onerror = () => ws = serverConnect(url);
+ //   nws.onclose = () => ws = serverConnect(url);
+    waitingForOpen = ['Hello Brain'];
+
+    nws.onopen = () => waitingForOpen.forEach((msg) => {
+        ws.send(msg);
+        console.log('m', msg);
+    });
+
+    return nws;
+}
 
 // ASSIGNING LISTENERS
 
 const tabActivated = (activeInfo: chrome.tabs.TabActiveInfo): void => {
     chrome.tabs.get(activeInfo.tabId, ({ url, title }: chrome.tabs.Tab) => {
         arriveAtNewPlace(url, title);
-        if (ws.OPEN) {
-            //ws.send(JSON.stringify({ url, title }))
+        if (ws.readyState === ws.OPEN) {
+            console.log('sending');
+            ws.send(JSON.stringify({ url, title }));
+        } else {
+            console.log('deffering');
+            waitingForOpen.push(JSON.stringify({ url, title }));
         }
     });
 };
