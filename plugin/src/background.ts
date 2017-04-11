@@ -1,5 +1,6 @@
 import { next } from './app/app';
 import { fmap, Maybe } from './libs/maybe';
+import { initSockets } from './libs/websockets';
 import { addPageEvent } from './reducers/pages/actions/action.creators';
 import { Page, PageEvent, Place } from './state/state.interface';
 
@@ -24,38 +25,14 @@ const arriveAtNewPlace = fmap((url: string, title: string): void => {
     next((addPageEvent(pageEvent)));
 });
 
-// SERVER COMMUNICATION
-
-let ws: WebSocket = serverConnect('ws://localhost:3000');
-let waitingForOpen: string[] = [];
-
-function serverConnect(url: string): WebSocket {
-    const nws = new WebSocket(url);
-
-    nws.onerror = () => ws = serverConnect(url);
- //   nws.onclose = () => ws = serverConnect(url);
-    waitingForOpen = ['Hello Brain'];
-
-    nws.onopen = () => waitingForOpen.forEach((msg) => {
-        ws.send(msg);
-        console.log('m', msg);
-    });
-
-    return nws;
-}
-
 // ASSIGNING LISTENERS
+
+const send = initSockets('ws://localhost:3000', console.log.bind(console));
 
 const tabActivated = (activeInfo: chrome.tabs.TabActiveInfo): void => {
     chrome.tabs.get(activeInfo.tabId, ({ url, title }: chrome.tabs.Tab) => {
         arriveAtNewPlace(url, title);
-        if (ws.readyState === ws.OPEN) {
-            console.log('sending');
-            ws.send(JSON.stringify({ url, title }));
-        } else {
-            console.log('deffering');
-            waitingForOpen.push(JSON.stringify({ url, title }));
-        }
+        send(JSON.stringify({url, title}));
     });
 };
 

@@ -15,6 +15,6 @@ export function fmap(f: Function): Function {
     return (...args: any[]) => !args.some(isNothing) ? f.apply(null, args) : null;
 }
 
-function isNothing(x: any): x is Nothing {
+export function isNothing(x: any): x is Nothing {
     return (x === null || x === undefined);
 }
