@@ -17,6 +17,7 @@ fuse.bundle({
   "tests/action.creators.spec.js": ">reducers/pages/actions/action.creators.spec.ts",
   "tests/pages.reducer.spec.js": ">reducers/pages/pages.reducer.spec.ts",
   "tests/popup.view.spec.js": ">views/popup.view.spec.ts",
+  "tests/badge.view.spec.js": ">views/badge.view.spec.ts",
 });
 
 

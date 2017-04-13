@@ -80,7 +80,7 @@ export const pandaArrived: PageEvent = {
         at: placeOfErr,
         from: placeOfTher,
         req: placeOfErr,
-        when: 13424559,
+        when: 13424552,
         who: 'Panda',
 };
 
@@ -96,7 +96,7 @@ export const pandaTraveled: PageEvent = {
         at: placeOfBear,
         from: placeOfTher,
         req: placeOfErr,
-        when: 13424559,
+        when: 13424563,
         who: 'Panda',
 };
 
