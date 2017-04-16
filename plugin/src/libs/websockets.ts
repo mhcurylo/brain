@@ -27,7 +27,7 @@ export const initSockets = (url: string, callback: ((res: MessageEvent) => void)
     }
 
     return (req: string): void => {
-        if (ws.readyState === ws.OPEN) {
+        if (ws.readyState === 1) {
             ws.send(req);
         } else {
             helloBrain = shakeWith(req);

@@ -18,6 +18,7 @@ fuse.bundle({
   "tests/pages.reducer.spec.js": ">reducers/pages/pages.reducer.spec.ts",
   "tests/popup.view.spec.js": ">views/popup.view.spec.ts",
   "tests/badge.view.spec.js": ">views/badge.view.spec.ts",
+  "tests/websockets.view.spec.js": ">libs/websockets.spec.ts"
 });
 
 

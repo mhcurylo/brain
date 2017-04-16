@@ -1,7 +1,7 @@
 import { should } from 'chai';
 import { Page, Place, State } from '../state/state.interface';
 import { fullBlownPage, pandaArrived, pandaDeparted, pandaTraveled } from '../testing/fixtures';
-import { renderBadgeText }from './badge.view';
+import { renderBadgeText } from './badge.view';
 
 should();
 
@@ -33,4 +33,3 @@ describe('Badge view', () => {
         });
     })
 });
-
