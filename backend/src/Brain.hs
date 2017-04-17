@@ -6,6 +6,7 @@ module Brain
 
 import BrainData
 import BrainState
+import NameGen
 import qualified Data.Text                      as T
 import qualified Data.Text.IO                   as TIO
 import qualified Network.HTTP.Types             as Http
@@ -14,9 +15,6 @@ import qualified Network.Wai.Handler.Warp       as Warp
 import qualified Network.Wai.Handler.WebSockets as WS
 import qualified Network.WebSockets             as WS
 import qualified Data.Map           as M
-import Data.Random.RVar (runRVar, RVar)
-import Data.Random.List (randomElement)
-import Data.Random.Source.DevRandom (DevRandom(..))
 import Control.Concurrent (MVar, newMVar, modifyMVar_, modifyMVar, readMVar)
 
 runBrain :: Int -> IO ()
@@ -46,21 +44,9 @@ connectWithBrain conn mstate = do
 
 addClientToMState :: WS.Connection -> MState -> IO ()
 addClientToMState conn mstate = do
-  name <- runRVar getRandomName DevURandom
+  name <- runName
   state <- readMVar mstate
   TIO.putStrLn name
   if clientPresent name state
     then addClientToMState conn mstate
     else modifyMVar_ mstate $ return . addClientToState name conn
-
-getRandomName :: RVar T.Text
-getRandomName = do
-   title <- randomElement titles
-   actor <- randomElement actors
-   return $ T.append title actor
-
-titles :: [T.Text]
-titles = map ((flip T.append) " ") ["Brown", "Yellow", "Red", "Green", "Black", "White", "Irish", "Crown", "Savage", "Bonzai"]
-
-actors :: [T.Text]
-actors = ["panda", "Aphrodite", "Zeus", "wolverine", "cat", "capybara"]
