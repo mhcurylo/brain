@@ -25,6 +25,8 @@ library
                      , wai-websockets
                      , warp
                      , containers
+                     , random-fu
+                     , random-source
   default-language:    Haskell2010
 
 executable brain-backend-exe
