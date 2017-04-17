@@ -1,7 +1,8 @@
 module BrainState (
   initState,
   clientPresent,
-  addClientToState
+  addClientToState,
+  removeClientFromState
   ) where
 
 import           BrainData

@@ -39,14 +39,20 @@ wsApp mstate pending = do
 
 connectWithBrain :: WS.Connection -> MState -> IO ()
 connectWithBrain conn mstate = do
-  addClientToMState conn mstate
+  name <- addClientToMState conn mstate
   WS.sendTextData conn ("You do know us." :: T.Text)
+  removeClientFromMState name mstate
 
-addClientToMState :: WS.Connection -> MState -> IO ()
+addClientToMState :: WS.Connection -> MState -> IO T.Text
 addClientToMState conn mstate = do
   name <- runName
   state <- readMVar mstate
-  TIO.putStrLn name
   if clientPresent name state
     then addClientToMState conn mstate
-    else modifyMVar_ mstate $ return . addClientToState name conn
+    else do
+      TIO.putStrLn name
+      modifyMVar_ mstate $ return . addClientToState name conn
+      return name
+
+removeClientFromMState :: T.Text -> MState -> IO ()
+removeClientFromMState name = (flip modifyMVar_) $ return . removeClientFromState name
