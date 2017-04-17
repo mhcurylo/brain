@@ -5,6 +5,7 @@
   "main": "",
   "scripts": {
     "start": "echo 'build or test'",
+    "dev": "watch 'npm run build' ./src",
     "test": "nyc mocha",
     "test.watch": "watch 'npm test' ./src",
     "coverage": "npm test && nyc report --reporter=lcov",

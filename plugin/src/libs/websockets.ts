@@ -2,6 +2,7 @@ import { fmap, isNothing, Maybe } from './maybe';
 
 export const initSockets = (url: string, callback: ((res: MessageEvent) => void)) => {
     let ws: WebSocket = serverConnect();
+    let timeout: Maybe<number> = null;
     let helloBrain: () => void = shakeWith(null);
 
     function serverConnect(): WebSocket {
@@ -16,7 +17,12 @@ export const initSockets = (url: string, callback: ((res: MessageEvent) => void)
     }
 
     function reconnect() {
-        return setTimeout(() => ws = serverConnect(), 1000);
+        if (!timeout) {
+            timeout = setTimeout(() => {
+                ws = serverConnect();
+                timeout = null;
+            }, 1000);
+        }
     }
 
     function shakeWith(msg: Maybe<string>): (() => void) {

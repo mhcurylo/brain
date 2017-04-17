@@ -131,5 +131,21 @@ describe('Webscokets', () => {
 
         receivedMsgs.should.not.contain('Foo');
         receivedMsgs.should.contain('Woo');
+    })
+
+    it('should not produce multiple reconnections on error', () => {
+        mockServer.stop();
+        clock.tick(100);
+        const send = initSockets('ws://localhost:3000', callback);
+        send('Foo');
+        clock.tick(2100);
+
+        mockServer = new Server('ws://localhost:3000');
+        mockServer.on('message', (msg: any) => {
+            receivedMsgs.push(msg);
+        })
+
+        clock.tick(1100);
+        receivedMsgs.filter((x: string) => x === 'Foo').length.should.eql(1);
    });
 });

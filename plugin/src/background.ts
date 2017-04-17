@@ -27,7 +27,7 @@ const arriveAtNewPlace = fmap((url: string, title: string): void => {
 
 // ASSIGNING LISTENERS
 
-const send = initSockets('ws://localhost:3000', console.log.bind(console));
+const send = initSockets('ws://localhost:3000', (msg: MessageEvent) => {console.log('MSG', msg.data);});
 
 const tabActivated = (activeInfo: chrome.tabs.TabActiveInfo): void => {
     chrome.tabs.get(activeInfo.tabId, ({ url, title }: chrome.tabs.Tab) => {
