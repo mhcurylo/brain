@@ -4,8 +4,8 @@ import { initState } from '../state/state.init';
 import { State } from '../state/state.interface';
 import { createStore } from '../store/store';
 import { ActionEvent, ActionStore } from '../store/store.interface';
-import { updateBadge } from '../views/badge.view';
 import { broadcast } from './broadcast';
+import { updateBadge } from './update-badge';
 
 export const next: ((action: ActionEvent) => void) = (() => {
     let store: ActionStore<State> = createStore({
