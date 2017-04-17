@@ -1,11 +1,12 @@
 module BrainData (
     Title
   , Url
+  , UrlPath
   , Name
   , Time
   , PlaceData(..)
   , PlaceEvent(..)
-  , Path
+  , ClientPath
   , History(..)
   , Histories
   , Story(..)
@@ -31,9 +32,11 @@ type Title = T.Text
 type Url = T.Text
 type Name = T.Text
 type Time = Integer
+type UrlPath = [T.Text]
 
 data PlaceData = PlaceData {
     placeUrl   :: Url
+  , placeUrlPath :: UrlPath
   , placeTitle :: Title
 }
 
@@ -42,11 +45,11 @@ data PlaceEvent = PlaceEvent {
   , placeEventWhere :: PlaceData
 }
 
-type Path = [PlaceEvent]
+type ClientPath = [PlaceEvent]
 
 data History = History {
     clientName :: Name
-  , clientPath :: Path
+  , clientPath :: ClientPath
 }
 
 type Histories = [History]
