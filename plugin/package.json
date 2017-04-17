@@ -5,10 +5,31 @@
   "main": "",
   "scripts": {
     "start": "echo 'build or test'",
-    "test": "node fuse.tests.js && ./node_modules/.bin/mocha ./tests",
+    "test": "nyc mocha",
     "test.watch": "watch 'npm test' ./src",
+    "coverage": "npm test && nyc report --reporter=lcov",
     "build": "npm run lint && npm test && node fuse.js",
     "lint": "tslint -c tslint.json src/**/*"
+  },
+  "nyc": {
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "src/**/*.spec.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "text-summary",
+      "html"
+    ],
+    "sourceMap": true,
+    "instrument": true
   },
   "author": "mhcurylo",
   "license": "ISC",
@@ -21,7 +42,10 @@
     "fuse-box": "^1.3.126",
     "mocha": "^3.2.0",
     "mock-socket": "^6.0.4",
+    "nyc": "^10.2.0",
     "sinon": "^2.1.0",
+    "source-map-support": "^0.4.14",
+    "ts-node": "^3.0.2",
     "tslint": "^5.0.0",
     "typescript": "^2.2.1",
     "watch": "^1.0.2"

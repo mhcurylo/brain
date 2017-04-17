@@ -3,4 +3,7 @@ plugin/chrome/*.js
 plugin/chrome/*.js.map
 plugin/.fusebox
 plugin/tests
+plugin/.nyc_output
+plugin/coverage
 backend/.stack-work
+
