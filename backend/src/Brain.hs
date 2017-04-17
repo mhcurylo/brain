@@ -14,6 +14,8 @@ import qualified Network.Wai                    as Wai
 import qualified Network.Wai.Handler.Warp       as Warp
 import qualified Network.Wai.Handler.WebSockets as WS
 import qualified Network.WebSockets             as WS
+import Control.Exception (finally)
+import Control.Monad (forM_, forever)
 import qualified Data.Map           as M
 import Control.Concurrent (MVar, newMVar, modifyMVar_, modifyMVar, readMVar)
 
@@ -41,9 +43,15 @@ connectWithBrain :: WS.Connection -> MState -> IO ()
 connectWithBrain conn mstate = do
   name <- addClientToMState conn mstate
   WS.sendTextData conn ("You do know us." :: T.Text)
-  removeClientFromMState name mstate
+  finally (communion name conn mstate) (removeClientFromMState name mstate)
 
-addClientToMState :: WS.Connection -> MState -> IO T.Text
+communion :: Name -> WS.Connection -> MState -> IO ()
+communion name conn mstate = forever $ do
+  msg <- WS.receiveData conn
+  WS.sendTextData conn $ T.append "We do know you, " name;
+  WS.sendTextData conn $ T.append "You spoke about " msg;
+
+addClientToMState :: WS.Connection -> MState -> IO Name
 addClientToMState conn mstate = do
   name <- runName
   state <- readMVar mstate
@@ -54,5 +62,5 @@ addClientToMState conn mstate = do
       modifyMVar_ mstate $ return . addClientToState name conn
       return name
 
-removeClientFromMState :: T.Text -> MState -> IO ()
+removeClientFromMState :: Name -> MState -> IO ()
 removeClientFromMState name = (flip modifyMVar_) $ return . removeClientFromState name
