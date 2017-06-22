@@ -6,7 +6,6 @@ main :: IO ()
 main = hspec spec
 
 spec :: Spec
-spec = do 
-  describe "Brain" $ do
-    it "needs test" $ do
-      "test" `shouldBe` "test"
+spec = describe "Brain" $
+         it "needs test" $
+            "test" `shouldBe` "test"

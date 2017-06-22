@@ -45,7 +45,7 @@ connectWithBrain conn mstate = do
   WS.sendTextData conn ("You do know us." :: T.Text)
   finally (communion name conn mstate) (removeClientFromMState name mstate)
 
-communion :: Name -> WS.Connection -> MState -> IO ()
+communion :: Name -> System.UUID.V4 WS.Connection -> MState -> IO ()
 communion name conn mstate = forever $ do
   msg <- WS.receiveData conn
   WS.sendTextData conn $ T.append "We do know you, " name;

@@ -1,97 +1,58 @@
 module BrainData (
-    Title
-  , Url
-  , UrlPath
-  , Name
-  , Time
-  , PlaceData(..)
-  , PlaceEvent(..)
-  , ClientPath
-  , History(..)
-  , Histories
-  , Story(..)
-  , Stories
-  , Client(..)
-  , Clients
-  , Names
-  , Connection(..)
-  , Connections
-  , Place(..)
-  , Places
-  , State(..)
-  , MState
+  Title,
+  User,
+  Name,
+  Time,
+  UrlPath,
+  Names,
+  Connections,
+  Places,
+  NamesInUse,
+  History,
+  PlaceEvent(..),
+  Place(..),
+  State(..),
+  MState
                  ) where
 
 import qualified Data.Map           as M
 import qualified Data.Set           as S
 import qualified Data.Text          as T
 import qualified Network.WebSockets as WS
+import qualified Data.UUID          as U
 import Control.Concurrent (MVar)
 
+
 type Title = T.Text
-type Url = T.Text
+type User = U.UUID
 type Name = T.Text
 type Time = Integer
 type UrlPath = [T.Text]
 
-data PlaceData = PlaceData {
-    placeUrl   :: Url
-  , placeUrlPath :: UrlPath
-  , placeTitle :: Title
-}
+type Names = M.Map User Name
+type Connections = M.Map User WS.Connection
+type Places = M.Map UrlPath Place
+type NamesInUse = S.Set Name
+type History = [PlaceEvent]
 
 data PlaceEvent = PlaceEvent {
     placeEventWhen  :: Time
-  , placeEventWhere :: PlaceData
+  , placeEventUrl :: UrlPath
+  , placeEventWho :: User
 }
 
-type ClientPath = [PlaceEvent]
-
-data History = History {
-    clientName :: Name
-  , clientPath :: ClientPath
-}
-
-type Histories = [History]
-
-data Story = Story {
-    shortStoryWho  :: Name
-  , shortStoryWhen :: Time
-  , shortStoryFrom :: PlaceData
-  , shortStoryTo   :: PlaceData
-}
-
-type Stories = [Story]
-
-data Client = Client {
-    clientConnection :: WS.Connection
-  , clientHistory    :: History
-}
-
-type Clients = M.Map Name Client
-type Names = S.Set Name
-
-data Connection = Connection {
-    connectionTo       :: PlaceData
-  , connectionFrom     :: PlaceData
-  , connectionStrength :: Integer
-}
-
-type Connections = [Connection]
 
 data Place = Place {
-     placeData       :: PlaceData
-   , placeNeighbours :: Connections
-   , placeStories    :: Stories
-   , placeClients    :: Names
+    placeTitle :: Title
+  , placeHistory :: History
 }
-
-type Places = M.Map Url Place
 
 data State = State {
     statePlaces :: Places
-  , stateClients :: Clients
-  , stateHistories :: Histories
+  , stateNames :: Names
+  , stateNamesInUse :: NamesInUse
+  , stateConnections :: Connections
+  , stateHistory :: History
 }
 
 type MState = MVar State
