@@ -43,10 +43,10 @@ connectWithBrain :: WS.Connection -> MState -> IO ()
 connectWithBrain conn mstate = do
   name <- addClientToMState conn mstate
   WS.sendTextData conn ("You do know us." :: T.Text)
-  finally (communion name conn mstate) (removeClientFromMState name mstate)
+  finally (connectUserToBrain name conn mstate) (removeClientFromMState name mstate)
 
-communion :: Name -> System.UUID.V4 WS.Connection -> MState -> IO ()
-communion name conn mstate = forever $ do
+connectUserToBrain :: Name -> System.UUID.V4 WS.Connection -> MState -> IO ()
+connectUserToBrain name conn mstate = forever $ do
   msg <- WS.receiveData conn
   WS.sendTextData conn $ T.append "We do know you, " name;
   WS.sendTextData conn $ T.append "You spoke about " msg;
@@ -63,4 +63,4 @@ addClientToMState conn mstate = do
       return name
 
 removeClientFromMState :: Name -> MState -> IO ()
-removeClientFromMState name = (flip modifyMVar_) $ return . removeClientFromState name
+removeClientFromMState name = flip modifyMVar $ return . removeClientFromState name

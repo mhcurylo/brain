@@ -1,10 +1,11 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 module BrainData (
   Title,
-  User,
+  UserUUID,
   Name,
   Time,
   UrlPath,
-  Names,
   Connections,
   Places,
   NamesInUse,
@@ -12,47 +13,59 @@ module BrainData (
   PlaceEvent(..),
   Place(..),
   State(..),
+  User(..),
   MState
                  ) where
 
-import qualified Data.Map           as M
-import qualified Data.Set           as S
-import qualified Data.Text          as T
-import qualified Network.WebSockets as WS
-import qualified Data.UUID          as U
+import GHC.Generics (Generic)
+import qualified Data.Hashable       as H
+import qualified Data.HashMap.Strict as HM
+import qualified Data.Map            as M
+import qualified Data.Set            as S
+import qualified Data.Text           as T
+import qualified Network.WebSockets  as WS
+import qualified Data.UUID           as U
 import Control.Concurrent (MVar)
 
 
 type Title = T.Text
-type User = U.UUID
+type UserUUID = U.UUID
 type Name = T.Text
 type Time = Integer
 type UrlPath = [T.Text]
 
-type Names = M.Map User Name
-type Connections = M.Map User WS.Connection
-type Places = M.Map UrlPath Place
+type Users = M.Map UserUUID User
+type Connections = M.Map UserUUID WS.Connection
+type Places = HM.HashMap UrlPath Place
 type NamesInUse = S.Set Name
-type History = [PlaceEvent]
+type PlaceEvents = HM.HashMap PlaceEvent PlaceEvent
+type History = [Int]
+
+data User = User {
+    userName :: Name
+  , userHistory :: History
+} deriving Show
 
 data PlaceEvent = PlaceEvent {
     placeEventWhen  :: Time
-  , placeEventUrl :: UrlPath
-  , placeEventWho :: User
-}
-
+  , placeEventUserUUID :: UserUUID
+  , placeEventUserName :: Name
+  , placeEventTo :: UrlPath
+  , placeEventFrom :: UrlPath
+} deriving (Show, Generic)
 
 data Place = Place {
     placeTitle :: Title
+  , placeUrl :: UrlPath
   , placeHistory :: History
-}
+} deriving (Show)
 
 data State = State {
     statePlaces :: Places
-  , stateNames :: Names
+  , stateUsers :: Users
   , stateNamesInUse :: NamesInUse
   , stateConnections :: Connections
-  , stateHistory :: History
+  , statePlaceEvents :: PlaceEvents
 }
 
 type MState = MVar State
