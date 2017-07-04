@@ -7,8 +7,7 @@ import BrainData
 import qualified Data.Text                      as T
 
 data EventMsg = EventMsg {
-    eventMsgUrl :: Url
-  , eventMsgUrlPath :: UrlPath
+    eventMsgUrlPath :: UrlPath
   , eventMsgTitle :: Title
 }
 

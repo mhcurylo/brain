@@ -37,18 +37,16 @@ wsApp mstate pending = do
         msg <- WS.receiveData conn :: IO T.Text
         case msg of
           "Hello Brain!" -> connectWithBrain conn mstate
-          _ -> WS.sendTextData conn ("You do not know us." :: T.Text)
+          _ -> WS.sendTextData conn ("Wrong handshake." :: T.Text)
 
 connectWithBrain :: WS.Connection -> MState -> IO ()
 connectWithBrain conn mstate = do
   name <- addClientToMState conn mstate
-  WS.sendTextData conn ("You do know us." :: T.Text)
   finally (connectUserToBrain name conn mstate) (removeClientFromMState name mstate)
 
 connectUserToBrain :: Name -> System.UUID.V4 WS.Connection -> MState -> IO ()
 connectUserToBrain name conn mstate = forever $ do
   msg <- WS.receiveData conn
-  WS.sendTextData conn $ T.append "We do know you, " name;
   WS.sendTextData conn $ T.append "You spoke about " msg;
 
 addClientToMState :: WS.Connection -> MState -> IO Name
