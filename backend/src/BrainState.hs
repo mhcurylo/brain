@@ -1,29 +1,28 @@
 module BrainState (
   initState,
-  clientPresent,
-  addClientToState,
-  removeClientFromState
+  isNameInUse,
+  addUserToState,
+  removeUserFromState
   ) where
 
 import           BrainData
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Map            as M
 import qualified Data.Set            as S
-import qualified Data.Text           as T
 import qualified Network.WebSockets  as WS
 
 initState :: State
 initState = State S.empty M.empty M.empty M.empty HM.empty
 
-isNameInUse :: T.Text -> State -> Bool
+isNameInUse :: Name -> State -> Bool
 isNameInUse  name state = S.member name $ stateNamesInUse state
 
-addUser :: UserUUID -> T.Text -> Users -> Users
-addUser uuid name = M.insert uuid $ User name $ History [] uuid
+addUser :: UserUUID -> Name -> Users -> Users
+addUser uuid name = M.insert uuid $ User name [] uuid
 
-removeClientFromState :: UserUUID -> State -> State
-removeClientFromState userUUID (State p n u c e) = State p n u (M.delete userUUID c) e
+removeUserFromState :: UserUUID -> Name -> State -> State
+removeUserFromState uuid name (State n u c e p) = State (S.delete name n) u (M.delete uuid c) e p
 
-addClientToState :: UserUUID -> T.Text -> WS.Connection -> State -> State
-addClientToState userUUID name conn (State p n u c e) = State p (S.insert name n) (addUser userUUID name u) (M.insert userUUID conn c)  h
+addUserToState :: UserUUID -> Name -> WS.Connection -> State -> State
+addUserToState uuid name conn (State n u c e p) = State (S.insert name n) (addUser uuid name u) (M.insert uuid conn c)  e p
 

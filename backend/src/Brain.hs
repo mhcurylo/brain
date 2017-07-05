@@ -14,6 +14,7 @@ import qualified Network.Wai                    as Wai
 import qualified Network.Wai.Handler.Warp       as Warp
 import qualified Network.Wai.Handler.WebSockets as WS
 import qualified Network.WebSockets             as WS
+import qualified Data.UUID.V4                   as U4
 import Control.Exception (finally)
 import Control.Monad (forM_, forever)
 import qualified Data.Map           as M
@@ -41,24 +42,25 @@ wsApp mstate pending = do
 
 connectWithBrain :: WS.Connection -> MState -> IO ()
 connectWithBrain conn mstate = do
-  name <- addClientToMState conn mstate
-  finally (connectUserToBrain name conn mstate) (removeClientFromMState name mstate)
+  (name, uuid) <- addUserToMState conn mstate
+  finally (connectUserToBrain uuid name conn mstate) (removeClientFromMState uuid name mstate)
 
-connectUserToBrain :: Name -> System.UUID.V4 WS.Connection -> MState -> IO ()
-connectUserToBrain name conn mstate = forever $ do
+connectUserToBrain :: UserUUID -> Name -> WS.Connection -> MState -> IO ()
+connectUserToBrain uuid name conn mstate = forever $ do
   msg <- WS.receiveData conn
   WS.sendTextData conn $ T.append "You spoke about " msg;
 
-addClientToMState :: WS.Connection -> MState -> IO Name
-addClientToMState conn mstate = do
+addUserToMState :: WS.Connection -> MState -> IO (Name, UserUUID)
+addUserToMState conn mstate = do
   name <- runName
   state <- readMVar mstate
-  if clientPresent name state
-    then addClientToMState conn mstate
+  if isNameInUse name state
+    then addUserToMState conn mstate
     else do
+      uuid <- U4.nextRandom
       TIO.putStrLn name
-      modifyMVar_ mstate $ return . addClientToState name conn
-      return name
+      modifyMVar_ mstate $ return . addUserToState uuid name conn
+      return (name, uuid)
 
-removeClientFromMState :: Name -> MState -> IO ()
-removeClientFromMState name = flip modifyMVar $ return . removeClientFromState name
+removeClientFromMState :: UserUUID -> Name -> MState -> IO ()
+removeClientFromMState uuid name = flip modifyMVar_ $ return . removeUserFromState uuid name
