@@ -52,6 +52,9 @@ instance Arbitrary TC.UTCTime where
     randomTime <- choose (0, 86401) :: Gen Int
     return $ TC.UTCTime (TCA.fromGregorian randomYear randomMonth randomDay) (fromIntegral randomTime)
 
+instance Show WS.Connection where
+  show _ = "WS.Connection"
+
 type Title = T.Text
 type UserUUID = U.UUID
 type PlaceEventUUID = U.UUID
@@ -91,11 +94,11 @@ data State = State {
   , stateConnections :: Connections
   , statePlaceEvents :: PlaceEvents
   , statePlaces :: Places
-}
+} deriving (Show)
 
 instance Arbitrary State where
   arbitrary = do
-    namesInUse <- arbitrary
+    let namesInUse = S.empty
     let users = M.empty
     let conns = M.empty
     let placeEvents = M.empty
