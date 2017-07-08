@@ -15,12 +15,17 @@ main :: IO ()
 main = hspec spec
 
 prop_isNameInUse_true :: Name -> Bool
-prop_isNameInUse_true name = isNameInUse name state || T.null name
+prop_isNameInUse_true name = isNameInUse name state
   where
-    state = State (S.singleton name) M.empty M.empty M.empty M.empty
+    state = State (S.singleton name) M.empty M.empty M.empty
 
 prop_isNameInUse_false :: Name -> State -> Bool
 prop_isNameInUse_false name state = not $ isNameInUse name state
+
+prop_addsUserToState :: UserUUID -> Name -> State -> Bool
+prop_addsUserToState uuid name state = M.member uuid (stateUsers newState) && isNameInUse name newState
+  where
+    newState = addUserToState uuid name state
 
 spec :: Spec
 spec = do
@@ -28,6 +33,4 @@ spec = do
     it "should return true if name is in use" $ property prop_isNameInUse_true
     it "should return false if name is not in use" $ property prop_isNameInUse_false
   describe "addUserToState" $ do
-    it "should add user name" $ property prop_isNameInUse_true
-    it "should add user data" $ property prop_isNameInUse_true
-    it "should add user connection" $ property prop_isNameInUse_false
+    it "should add user to state" $ property prop_addsUserToState

@@ -17,7 +17,7 @@ getName :: RVar Name
 getName = do
    title <- randomElement titles
    actor <- randomElement actors
-   return $ T.append title actor
+   return $ Name $ T.append title actor
 
 titles :: [T.Text]
 titles = map (`T.append` " ") ["Brown", "Yellow", "Red", "Green", "Black", "White", "Irish", "Crown", "Savage", "Bonzai"]

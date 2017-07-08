@@ -3,6 +3,7 @@
 module NameGenSpec (main, spec) where
 import qualified Data.Text                      as T
 
+import BrainData
 import NameGen
 import Test.Hspec
 import Test.QuickCheck
@@ -14,9 +15,9 @@ main = hspec spec
 prop_runName_returns2words :: Property
 prop_runName_returns2words = monadicIO $ do
    name <- run runName
-   assert ((length . T.words $ name) == 2)
+   assert ((length . T.words $ (\(Name n) -> n) name) == 2)
 
 spec :: Spec
 spec = do
   describe "NameGen runName" $ do
-    it "should generate name of two words" $ property $ prop_runName_returns2words
+    it "should generate name of two words" $ property prop_runName_returns2words
