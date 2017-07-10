@@ -27,6 +27,11 @@ prop_addsUserToState uuid name state = M.member uuid (stateUsers newState) && is
   where
     newState = addUserToState uuid name state
 
+prop_removesUserFromState :: UserUUID -> Name -> State -> Bool
+prop_removesUserFromState uuid name state = not $ isNameInUse name newState
+  where
+    newState = removeUserFromState uuid name $ addUserToState uuid name state
+
 spec :: Spec
 spec = do
   describe "isNameInUse" $ do
@@ -34,3 +39,5 @@ spec = do
     it "should return false if name is not in use" $ property prop_isNameInUse_false
   describe "addUserToState" $ do
     it "should add user to state" $ property prop_addsUserToState
+  describe "removeUserFromState" $ do
+    it "should remove added user from state" $ property prop_removesUserFromState

@@ -15,7 +15,9 @@ module BrainData (
   State(..),
   User(..),
   MComms,
-  MState
+  MState,
+  EventMsg(..),
+  FrontendMsg(..)
   ) where
 
 import GHC.Generics (Generic)
@@ -34,6 +36,11 @@ instance Arbitrary Name where
     text <- listOf1 arbitrary
     return $ Name $ T.pack text
 
+instance Arbitrary Title where
+  arbitrary = do
+    text <- listOf1 arbitrary
+    return $ Title $ T.pack text
+
 instance Arbitrary UserUUID where
   arbitrary = do
     w1 <- arbitrary :: Gen Word32
@@ -42,7 +49,7 @@ instance Arbitrary UserUUID where
     w4 <- arbitrary :: Gen Word32
     return $ UserUUID $ U.fromWords w1 w2 w3 w4
 
-type Title = T.Text
+newtype Title = Title T.Text
 newtype UserUUID = UserUUID U.UUID deriving (Show, Eq, Ord)
 type PlaceEventUUID = U.UUID
 newtype Name = Name T.Text deriving (Show, Eq, Ord)
@@ -52,6 +59,7 @@ type History = [PlaceEventUUID]
 type Places = M.Map UrlUUID Place
 type NamesInUse = S.Set Name
 type Users = M.Map UserUUID User
+type ConnectedUsers = S.Set UserUUID
 type PlaceEvents = M.Map PlaceEventUUID PlaceEvent
 type Connections = M.Map UserUUID WS.Connection
 
@@ -59,8 +67,7 @@ data User = User {
     userName :: Name
   , userHistory :: History
   , userUUID :: UserUUID
-  , userConnected :: Bool
-} deriving (Show)
+} deriving (Show, Eq, Ord)
 
 data PlaceEvent = PlaceEvent {
   placeEventWhen  :: TC.UTCTime
@@ -68,20 +75,21 @@ data PlaceEvent = PlaceEvent {
   , placeEventTo :: UrlUUID
   , placeEventFrom :: UrlUUID
   , placeEventUUID :: PlaceEventUUID
-} deriving (Show, Generic)
+} deriving (Show, Eq, Ord, Generic)
 
 data Place = Place {
     placeTitle :: Title
   , placeUrl :: UrlPath
+  , placeUsers :: ConnectedUsers
   , placeHistory :: History
-} deriving (Show)
+} deriving (Show, Eq, Ord)
 
 data State = State {
     stateNamesInUse :: NamesInUse
   , stateUsers :: Users
   , statePlaceEvents :: PlaceEvents
   , statePlaces :: Places
-} deriving (Show)
+} deriving (Show, Eq, Ord)
 
 instance Arbitrary State where
   arbitrary = do
@@ -93,3 +101,13 @@ instance Arbitrary State where
 
 type MState = MVar State
 type MComms = MVar Connections
+
+data EventMsg = EventMsg {
+    eventMsgUrlPath :: UrlPath
+  , eventMsgTitle :: Title
+}
+
+data FrontendMsg = FrontendMsg {
+    url :: T.Text
+  , title :: T.Text
+}

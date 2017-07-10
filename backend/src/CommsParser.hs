@@ -11,5 +11,10 @@ data EventMsg = EventMsg {
   , eventMsgTitle :: Title
 }
 
+data FrontendMsg = FrontendMsg {
+    url :: T.Text
+  , title :: T.Text
+}
+
 parseEventMsg :: T.Text -> T.Text
 parseEventMsg = id
