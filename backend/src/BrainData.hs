@@ -1,7 +1,8 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveDataTypeable #-}
 
 module BrainData (
-  Title,
+  Title(..),
   UserUUID(..),
   Users,
   Name(..),
@@ -21,11 +22,15 @@ module BrainData (
   ) where
 
 import GHC.Generics (Generic)
+import Data.Data (Data)
+import Data.Typeable (Typeable)
 import qualified Data.Map            as M
 import qualified Data.Set            as S
 import qualified Data.Text           as T
 import qualified Network.WebSockets  as WS
 import qualified Data.UUID           as U
+import qualified URI.ByteString      as URI
+import qualified Data.Aeson          as A
 import qualified Data.Time.Clock     as TC
 import Control.Concurrent (MVar)
 import Data.Word (Word32)
@@ -49,7 +54,8 @@ instance Arbitrary UserUUID where
     w4 <- arbitrary :: Gen Word32
     return $ UserUUID $ U.fromWords w1 w2 w3 w4
 
-newtype Title = Title T.Text
+type URL = URI.URIRef URI.Absolute
+newtype Title = Title T.Text deriving (Show, Eq, Ord)
 newtype UserUUID = UserUUID U.UUID deriving (Show, Eq, Ord)
 type PlaceEventUUID = U.UUID
 newtype Name = Name T.Text deriving (Show, Eq, Ord)
@@ -103,11 +109,11 @@ type MState = MVar State
 type MComms = MVar Connections
 
 data EventMsg = EventMsg {
-    eventMsgUrlPath :: UrlPath
+    eventMsgUrl   :: URL
   , eventMsgTitle :: Title
-}
+} deriving (Show, Eq, Ord)
 
 data FrontendMsg = FrontendMsg {
     url :: T.Text
   , title :: T.Text
-}
+} deriving (Show, Eq, Ord, Data, Typeable)

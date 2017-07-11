@@ -17,6 +17,7 @@ library
   hs-source-dirs:      src
   exposed-modules:     Brain, BrainData, NameGen, BrainComms, BrainState, CommsParser
   build-depends:       base >= 4.7 && < 5
+                     , aeson
                      , text
                      , http-types
                      , wai
@@ -30,6 +31,8 @@ library
                      , unordered-containers
                      , hashable
                      , time
+                     , uri-bytestring
+                     , bytestring
                      , QuickCheck
   default-language:    Haskell2010
 

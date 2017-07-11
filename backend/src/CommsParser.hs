@@ -5,16 +5,8 @@ module CommsParser (
 
 import BrainData
 import qualified Data.Text                      as T
+import qualified URI.ByteString                 as URI
+import qualified Data.Aeson                     as A
 
-data EventMsg = EventMsg {
-    eventMsgUrlPath :: UrlPath
-  , eventMsgTitle :: Title
-}
-
-data FrontendMsg = FrontendMsg {
-    url :: T.Text
-  , title :: T.Text
-}
-
-parseEventMsg :: T.Text -> T.Text
-parseEventMsg = id
+parseEventMsg :: T.Text -> IO T.Text
+parseEventMsg = return
