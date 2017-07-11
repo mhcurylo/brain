@@ -8,8 +8,7 @@ import BrainData
 import BrainState
 import NameGen
 import BrainComms
-import qualified Data.Text                      as T
-import qualified Data.Text.IO                   as TIO
+import qualified Data.ByteString                as B
 import qualified Network.HTTP.Types             as Http
 import qualified Network.Wai                    as Wai
 import qualified Network.Wai.Handler.Warp       as Warp
@@ -37,10 +36,10 @@ wsApp :: MState -> MComms -> WS.ServerApp
 wsApp mstate mcomms pending = do
         conn <- WS.acceptRequest pending
         WS.forkPingThread conn 30
-        msg <- WS.receiveData conn :: IO T.Text
+        msg <- WS.receiveData conn :: IO B.ByteString
         case msg of
           "Hello Brain!" -> connectWithBrain conn mstate mcomms
-          _ -> WS.sendTextData conn ("Wrong handshake." :: T.Text)
+          _ -> WS.sendTextData conn ("Wrong handshake." :: B.ByteString)
 
 connectWithBrain :: WS.Connection -> MState -> MComms -> IO ()
 connectWithBrain conn mstate mcomms = do
@@ -50,7 +49,7 @@ connectWithBrain conn mstate mcomms = do
 connectUserToBrain :: UserUUID -> Name -> WS.Connection -> MState -> MComms -> IO ()
 connectUserToBrain uuid name conn mstate mcomms = forever $ do
   msg <- WS.receiveData conn
-  WS.sendTextData conn $ T.append "You spoke about " msg;
+  WS.sendTextData conn $ B.append "You spoke about " msg;
 
 addUserToMState :: WS.Connection -> MState -> MComms -> IO (Name, UserUUID)
 addUserToMState conn mstate mcomms = do
@@ -61,7 +60,7 @@ addUserToMState conn mstate mcomms = do
     else do
       uuid <- UserUUID <$> U4.nextRandom
       let pname = (\(Name n) -> n) name
-      TIO.putStrLn pname
+      B.putStrLn pname
       modifyMVar_ mstate $ return . addUserToState uuid name
       modifyMVar_ mcomms $ return . addUserToComms uuid conn
       return (name, uuid)

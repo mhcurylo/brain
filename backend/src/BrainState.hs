@@ -7,7 +7,7 @@ module BrainState (
   ) where
 
 import           BrainData
-import qualified Data.Text           as T
+import qualified Data.ByteString     as B
 import qualified Data.HashMap.Strict as HM
 import qualified Data.Map            as M
 import qualified Data.Set            as S

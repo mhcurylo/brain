@@ -25,8 +25,8 @@ import GHC.Generics (Generic)
 import Data.Data (Data)
 import Data.Typeable (Typeable)
 import qualified Data.Map            as M
+import qualified Data.ByteString     as B
 import qualified Data.Set            as S
-import qualified Data.Text           as T
 import qualified Network.WebSockets  as WS
 import qualified Data.UUID           as U
 import qualified URI.ByteString      as URI
@@ -39,12 +39,12 @@ import Test.QuickCheck (Gen, Arbitrary, listOf1, arbitrary)
 instance Arbitrary Name where
   arbitrary = do
     text <- listOf1 arbitrary
-    return $ Name $ T.pack text
+    return $ Name $ B.pack text
 
 instance Arbitrary Title where
   arbitrary = do
     text <- listOf1 arbitrary
-    return $ Title $ T.pack text
+    return $ Title $ B.pack text
 
 instance Arbitrary UserUUID where
   arbitrary = do
@@ -55,11 +55,11 @@ instance Arbitrary UserUUID where
     return $ UserUUID $ U.fromWords w1 w2 w3 w4
 
 type URL = URI.URIRef URI.Absolute
-newtype Title = Title T.Text deriving (Show, Eq, Ord)
+newtype Title = Title B.ByteString deriving (Show, Eq, Ord)
 newtype UserUUID = UserUUID U.UUID deriving (Show, Eq, Ord)
 type PlaceEventUUID = U.UUID
-newtype Name = Name T.Text deriving (Show, Eq, Ord)
-type UrlPath = T.Text
+newtype Name = Name B.ByteString deriving (Show, Eq, Ord)
+type UrlPath = B.ByteString
 type UrlUUID = U.UUID
 type History = [PlaceEventUUID]
 type Places = M.Map UrlUUID Place
@@ -114,6 +114,6 @@ data EventMsg = EventMsg {
 } deriving (Show, Eq, Ord)
 
 data FrontendMsg = FrontendMsg {
-    url :: T.Text
-  , title :: T.Text
+    url :: B.ByteString
+  , title :: B.ByteString
 } deriving (Show, Eq, Ord, Data, Typeable)
