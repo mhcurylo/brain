@@ -1,5 +1,4 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DeriveDataTypeable #-}
 
 module BrainData (
   Title(..),
@@ -22,9 +21,8 @@ module BrainData (
   ) where
 
 import GHC.Generics (Generic)
-import Data.Data (Data)
-import Data.Typeable (Typeable)
 import qualified Data.Map            as M
+import qualified Data.Text           as T
 import qualified Data.ByteString     as B
 import qualified Data.Set            as S
 import qualified Network.WebSockets  as WS
@@ -44,7 +42,7 @@ instance Arbitrary Name where
 instance Arbitrary Title where
   arbitrary = do
     text <- listOf1 arbitrary
-    return $ Title $ B.pack text
+    return $ Title $ T.pack text
 
 instance Arbitrary UserUUID where
   arbitrary = do
@@ -55,7 +53,7 @@ instance Arbitrary UserUUID where
     return $ UserUUID $ U.fromWords w1 w2 w3 w4
 
 type URL = URI.URIRef URI.Absolute
-newtype Title = Title B.ByteString deriving (Show, Eq, Ord)
+newtype Title = Title T.Text deriving (Show, Eq, Ord)
 newtype UserUUID = UserUUID U.UUID deriving (Show, Eq, Ord)
 type PlaceEventUUID = U.UUID
 newtype Name = Name B.ByteString deriving (Show, Eq, Ord)
@@ -114,6 +112,8 @@ data EventMsg = EventMsg {
 } deriving (Show, Eq, Ord)
 
 data FrontendMsg = FrontendMsg {
-    url :: B.ByteString
-  , title :: B.ByteString
-} deriving (Show, Eq, Ord, Data, Typeable)
+    url :: T.Text
+  , title :: T.Text
+} deriving (Show, Eq, Ord, Generic)
+
+instance A.FromJSON FrontendMsg

@@ -1,12 +1,21 @@
 module CommsParser (
     parseEventMsg
-  , EventMsg(..)
 ) where
 
 import BrainData
-import qualified Data.ByteString                as B
-import qualified URI.ByteString                 as URI
-import qualified Data.Aeson                     as A
+import Control.Monad
+import qualified Data.ByteString     as B
+import qualified Data.Text.Encoding  as TE
+import qualified URI.ByteString      as URI
+import qualified Data.Aeson          as A
 
-parseEventMsg :: B.ByteString -> IO B.ByteString
-parseEventMsg = return
+parseEventMsg :: B.ByteString -> Maybe EventMsg
+parseEventMsg = eventMsgToFrontendMsg <=< parseFrontendMsg
+
+eventMsgToFrontendMsg :: FrontendMsg -> Maybe EventMsg
+eventMsgToFrontendMsg (FrontendMsg u t) = case URI.parseURI URI.strictURIParserOptions$ TE.encodeUtf8 u of
+   Right uri -> Just $ EventMsg uri $ Title t
+   Left _ -> Nothing
+
+parseFrontendMsg :: B.ByteString -> Maybe FrontendMsg
+parseFrontendMsg = A.decodeStrict
