@@ -48,7 +48,7 @@ test-suite brain-backend-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
-  other-modules:       BrainSpec, NameGenSpec, BrainStateSpec
+  other-modules:       BrainSpec, NameGenSpec, BrainStateSpec, CommsParserSpec
   build-depends:       base
                      , brain-backend
                      , hspec

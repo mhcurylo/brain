@@ -27,12 +27,11 @@ import qualified Data.ByteString     as B
 import qualified Data.Set            as S
 import qualified Network.WebSockets  as WS
 import qualified Data.UUID           as U
-import qualified URI.ByteString      as URI
 import qualified Data.Aeson          as A
 import qualified Data.Time.Clock     as TC
 import Control.Concurrent (MVar)
 import Data.Word (Word32)
-import Test.QuickCheck (Gen, Arbitrary, listOf1, arbitrary)
+import Test.QuickCheck
 
 instance Arbitrary Name where
   arbitrary = do
@@ -52,7 +51,7 @@ instance Arbitrary UserUUID where
     w4 <- arbitrary :: Gen Word32
     return $ UserUUID $ U.fromWords w1 w2 w3 w4
 
-type URL = URI.URIRef URI.Absolute
+newtype URL = URL B.ByteString deriving (Show, Eq, Ord)
 newtype Title = Title T.Text deriving (Show, Eq, Ord)
 newtype UserUUID = UserUUID U.UUID deriving (Show, Eq, Ord)
 type PlaceEventUUID = U.UUID
