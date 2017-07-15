@@ -7,16 +7,15 @@ import BrainData
 import Test.Hspec
 import Test.QuickCheck
 import CommsParser
-import qualified Data.ByteString         as B
 
-prop_parsesFrontendMsg :: ArbitraryFrontendMsg -> Bool
-prop_parsesFrontendMsg (ArbitraryFrontendMsg msg curl title) = case parseEventMsg msg of
-  Just (EventMsg url' title') -> curl == url' && title == title'
-  Nothing -> false
+prop_parsesFrontendMsgToCannonical :: FrontendMsgTest -> Bool
+prop_parsesFrontendMsgToCannonical (FrontendMsgTest msg curl titl) = case parseEventMsg msg of
+  Just (EventMsg url' title') -> curl == url' && titl == title'
+  Nothing -> False
 
 main :: IO ()
 main = hspec spec
 
 spec :: Spec
 spec = describe "CommsParser" $
-    it "should parse the message" $ property prop_runName_returns2words
+    it "should parse the message" $ property prop_parsesFrontendMsgToCannonical

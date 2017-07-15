@@ -4,6 +4,7 @@ module CommsParser (
 
 import BrainData
 import Control.Monad
+import Control.Lens (set)
 import qualified Data.ByteString     as B
 import qualified Data.Text.Encoding  as TE
 import qualified URI.ByteString      as URI
@@ -14,11 +15,18 @@ parseEventMsg = frontendMsgToEventMsg <=< parseFrontendMsg
 
 frontendMsgToEventMsg :: FrontendMsg -> Maybe EventMsg
 frontendMsgToEventMsg (FrontendMsg u t) = case URI.parseURI URI.strictURIParserOptions $ TE.encodeUtf8 u of
-   Right uri -> Just $ EventMsg $ URL (normalizeURI uri) $ Title t
+   Right uri -> Just $ EventMsg  (normalizeURI uri) (Title t)
    Left _ -> Nothing
 
-normalizeURI :: URI.URIRef URI.Absolute -> B.ByteString
-normalizeURI = URI.normalizeURIRef' URI.aggressiveNormalization
+
+emptyQuery :: URI.Query
+emptyQuery = URI.Query []
+
+cannonicalForm :: URI.URIRef URI.Absolute -> URI.URIRef URI.Absolute
+cannonicalForm = (set URI.queryL emptyQuery) . (set URI.fragmentL Nothing)
+
+normalizeURI :: URI.URIRef URI.Absolute -> URL
+normalizeURI = URL . URI.normalizeURIRef' URI.aggressiveNormalization . cannonicalForm
 
 parseFrontendMsg :: B.ByteString -> Maybe FrontendMsg
 parseFrontendMsg = A.decodeStrict

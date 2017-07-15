@@ -6,6 +6,7 @@ module BrainData (
   Users,
   Name(..),
   UrlPath,
+  URL(..),
   Connections,
   Places,
   NamesInUse,
