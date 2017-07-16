@@ -1,25 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE TemplateHaskell #-}
 
-module BrainData (
-  Title(..),
-  UserUUID(..),
-  Users,
-  Name(..),
-  UrlPath,
-  URL(..),
-  Connections,
-  Places,
-  NamesInUse,
-  History,
-  PlaceEvent(..),
-  Place(..),
-  State(..),
-  User(..),
-  MComms,
-  MState,
-  EventMsg(..),
-  FrontendMsg(..)
-  ) where
+module BrainData where
 
 import GHC.Generics (Generic)
 import qualified Data.Map            as M
@@ -30,6 +12,7 @@ import qualified Network.WebSockets  as WS
 import qualified Data.UUID           as U
 import qualified Data.Aeson          as A
 import qualified Data.Time.Clock     as TC
+import Control.Lens
 import Control.Concurrent (MVar)
 
 newtype URL = URL B.ByteString deriving (Show, Eq, Ord)
@@ -57,7 +40,7 @@ data PlaceEvent = PlaceEvent {
   placeEventWhen  :: TC.UTCTime
   , placeEventUserUUID :: UserUUID
   , placeEventTo :: UrlUUID
-  , placeEventFrom :: UrlUUID
+  , placeEventFrom :: Maybe UrlUUID
   , placeEventUUID :: PlaceEventUUID
 } deriving (Show, Eq, Ord, Generic)
 
@@ -79,9 +62,18 @@ type MState = MVar State
 type MComms = MVar Connections
 
 data EventMsg = EventMsg {
-    eventMsgUrl   :: URL
-  , eventMsgTitle :: Title
+    eventMsgUrl      :: URL
+  , eventMsgTitle    :: Title
 } deriving (Show, Eq, Ord)
+
+data EventData = EventData {
+    eventDataUserUUID :: UserUUID
+  , eventDataEventMsg :: EventMsg
+  , eventDataTime     :: TC.UTCTime
+} deriving (Show, Eq, Ord)
+
+data FrontendReply = FrontendReply {
+} deriving (Show, Eq, Ord, Generic)
 
 data FrontendMsg = FrontendMsg {
     url :: T.Text

@@ -17,9 +17,11 @@ import qualified Network.Wai.Handler.Warp       as Warp
 import qualified Network.Wai.Handler.WebSockets as WS
 import qualified Network.WebSockets             as WS
 import qualified Data.UUID.V4                   as U4
+import qualified Data.Time.Clock                as TC
+import Data.Maybe (isJust, fromJust)
 import Control.Exception (finally)
 import Control.Monad (forever)
-import Control.Concurrent (newMVar, modifyMVar_, readMVar)
+import Control.Concurrent (newMVar, modifyMVar, modifyMVar_, readMVar)
 
 runBrain :: Int -> IO ()
 runBrain port = do
@@ -39,24 +41,32 @@ wsApp mstate mcomms pending = do
         WS.forkPingThread conn 30
         msg <- WS.receiveData conn :: IO B.ByteString
         case msg of
-          "Hello Brain!" -> connectWithBrain conn mstate mcomms
+          "Hello Brain!" -> handshake conn mstate mcomms
           _ -> WS.sendTextData conn ("Wrong handshake." :: B.ByteString)
 
-connectWithBrain :: WS.Connection -> MState -> MComms -> IO ()
-connectWithBrain conn mstate mcomms = do
+handshake :: WS.Connection -> MState -> MComms -> IO ()
+handshake conn mstate mcomms = do
   (name, uuid) <- addUserToMState conn mstate mcomms
-  finally (connectUserToBrain uuid name conn mstate mcomms) (removeClientFromMState uuid name mstate mcomms)
+  finally (connection uuid conn mstate mcomms) (removeUserFromMState uuid name mstate mcomms)
 
-
-logMessage :: Name -> B.ByteString -> IO ()
-logMessage (Name n) = BChar.putStrLn . B.append n
-
-connectUserToBrain :: UserUUID -> Name -> WS.Connection -> MState -> MComms -> IO ()
-connectUserToBrain uuid name conn mstate mcomms = forever $ do
+connection :: UserUUID -> WS.Connection -> MState -> MComms -> IO ()
+connection uuid conn mstate mcomms = forever $ do
   msg <- WS.receiveData conn
-  logMessage name msg
-  print $ parseEventMsg msg
-  WS.sendTextData conn $ B.append "You spoke about " msg;
+  time <- TC.getCurrentTime
+  let msg' = parseEventMsg msg
+  if isJust msg'
+    then communicateEvent mstate mcomms $ EventData uuid (fromJust msg') time
+    else print $ "Error in parsing" ++ show msg
+
+communicateEvent :: MState -> MComms -> EventData -> IO ()
+communicateEvent mstate mcomms event = do
+  (comms, msg) <- addEventToMState mstate event
+  print "Communicating"
+  print comms
+  print msg
+
+addEventToMState :: MState -> EventData -> IO ([UserUUID], FrontendReply)
+addEventToMState mstate event = modifyMVar mstate $ return . addEventToState event
 
 addUserToMState :: WS.Connection -> MState -> MComms -> IO (Name, UserUUID)
 addUserToMState conn mstate mcomms = do
@@ -72,7 +82,7 @@ addUserToMState conn mstate mcomms = do
       modifyMVar_ mcomms $ return . addUserToComms uuid conn
       return (name, uuid)
 
-removeClientFromMState :: UserUUID -> Name -> MState -> MComms -> IO ()
-removeClientFromMState uuid name mstate mcomms = do
+removeUserFromMState :: UserUUID -> Name -> MState -> MComms -> IO ()
+removeUserFromMState uuid name mstate mcomms = do
   modifyMVar_ mstate $ return . removeUserFromState uuid name
   modifyMVar_ mcomms $ return . removeUserFromComms uuid

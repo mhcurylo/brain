@@ -3,7 +3,8 @@ module BrainState (
   initComms,
   isNameInUse,
   addUserToState,
-  removeUserFromState
+  removeUserFromState,
+  addEventToState
   ) where
 
 import           BrainData
@@ -30,3 +31,5 @@ removeUserFromState uuid name (State n u e p) = State (S.delete name n) users e 
 addUserToState :: UserUUID -> Name -> State -> State
 addUserToState uuid name (State n u e p) = State (S.insert name n) (addUser uuid name u) e p
 
+addEventToState :: EventData -> State -> (State, ([UserUUID], FrontendReply))
+addEventToState event state = (state, ([], FrontendReply))
