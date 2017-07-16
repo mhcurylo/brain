@@ -7,6 +7,7 @@ import BrainData
 import Test.Hspec
 import Test.QuickCheck
 import CommsParser
+import AribtraryInstances
 
 prop_parsesFrontendMsgToCannonical :: FrontendMsgTest -> Bool
 prop_parsesFrontendMsgToCannonical (FrontendMsgTest msg curl titl) = case parseEventMsg msg of

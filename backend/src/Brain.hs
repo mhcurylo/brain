@@ -45,16 +45,12 @@ wsApp mstate mcomms pending = do
 connectWithBrain :: WS.Connection -> MState -> MComms -> IO ()
 connectWithBrain conn mstate mcomms = do
   (name, uuid) <- addUserToMState conn mstate mcomms
-  finally (connectUserToBrain uuid name conn mstate mcomms) (removeClientFromMState uuid name mstate mcomms)
+  finally (communicateWithBrain uuid name conn mstate mcomms) (removeClientFromMState uuid name mstate mcomms)
 
 
-logMessage :: Name -> B.ByteString -> IO ()
-logMessage (Name n) = BChar.putStrLn . B.append n
-
-connectUserToBrain :: UserUUID -> Name -> WS.Connection -> MState -> MComms -> IO ()
-connectUserToBrain uuid name conn mstate mcomms = forever $ do
+communicateWithBrain :: UserUUID -> Name -> WS.Connection -> MState -> MComms -> IO ()
+communicateWithBrain uuid name conn mstate mcomms = forever $ do
   msg <- WS.receiveData conn
-  logMessage name msg
   print $ parseEventMsg msg
   WS.sendTextData conn $ B.append "You spoke about " msg;
 
