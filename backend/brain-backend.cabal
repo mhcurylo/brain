@@ -57,6 +57,7 @@ test-suite brain-backend-test
                      , containers
                      , unordered-containers
                      , bytestring
+                     , uuid
                      , text
                      , lens
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N

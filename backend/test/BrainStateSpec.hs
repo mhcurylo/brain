@@ -2,6 +2,7 @@
 
 module BrainStateSpec (main, spec) where
 
+import ArbitraryInstances()
 import BrainState
 import BrainData
 import Test.Hspec

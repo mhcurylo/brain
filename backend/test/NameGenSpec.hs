@@ -3,6 +3,7 @@
 module NameGenSpec (main, spec) where
 import qualified Data.ByteString.Char8   as Ch
 
+import ArbitraryInstances()
 import BrainData
 import NameGen
 import Test.Hspec
