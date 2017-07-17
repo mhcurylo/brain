@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+
 module ArbitraryInstances (
     FrontendMsgTest(..)
 ) where
@@ -9,6 +11,8 @@ import Test.QuickCheck
 import Data.Word (Word32)
 import qualified Data.Map            as M
 import qualified Data.Text           as T
+import qualified Data.Time           as TC
+import qualified Data.Time.Clock     as TC
 import qualified Data.ByteString     as B
 import qualified Data.Set            as S
 import qualified Data.UUID           as U
@@ -63,6 +67,7 @@ instance Arbitrary FrontendMsgTest where
     title' <- generateWord
     let msg = toFrontendMsgBS (url' ++ qandh) title'
     return $ FrontendMsgTest msg (URL $ BChar.pack url') (Title $ T.pack title')
+
 instance Arbitrary Name where
   arbitrary = do
     text <- listOf1 arbitrary
@@ -88,4 +93,25 @@ instance Arbitrary State where
     let placeEvents = M.empty
     let places = M.empty
     return $ State namesInUse users placeEvents places
+
+instance Arbitrary EventMsg where
+  arbitrary = do
+    url' <- generateUrl
+    title' <- generateWord
+    return $ EventMsg (URL $ BChar.pack url') (Title $ T.pack title')
+
+instance Arbitrary TC.UTCTime where
+    arbitrary =
+        do randomDay <- choose (1, 29) :: Gen Int
+           randomMonth <- choose (1, 12) :: Gen Int
+           randomYear <- choose (2005, 2017) :: Gen Integer
+           randomTime <- choose (0, 86401) :: Gen Int
+           return $ TC.UTCTime (TC.fromGregorian randomYear randomMonth randomDay) (fromIntegral randomTime)
+
+instance Arbitrary EventData where
+  arbitrary = do
+    userUUID <- arbitrary :: Gen UserUUID
+    event <- arbitrary :: Gen EventMsg
+    time <- arbitrary :: Gen TC.UTCTime
+    return $ EventData userUUID event time
 

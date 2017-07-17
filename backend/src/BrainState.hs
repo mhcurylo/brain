@@ -1,15 +1,10 @@
-module BrainState (
-  initState,
-  initComms,
-  isNameInUse,
-  addUserToState,
-  removeUserFromState,
-  addEventToState
-  ) where
+module BrainState where
 
 import           BrainData
 import qualified Data.Map            as M
 import qualified Data.Set            as S
+import qualified Data.UUID.V5        as U5
+import qualified Data.ByteString     as B
 
 initState :: State
 initState = State S.empty M.empty M.empty M.empty
@@ -33,3 +28,8 @@ addUserToState uuid name (State n u e p) = State (S.insert name n) (addUser uuid
 
 addEventToState :: EventData -> State -> (State, ([UserUUID], FrontendReply))
 addEventToState event state = (state, ([], FrontendReply))
+
+urlUUID :: URL -> UrlUUID
+urlUUID (URL u) = U5.generateNamed U5.namespaceURL $ B.unpack u
+
+

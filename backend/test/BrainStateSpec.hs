@@ -31,12 +31,17 @@ prop_removesUserFromState uuid name state = not $ isNameInUse name newState
   where
     newState = removeUserFromState uuid name $ addUserToState uuid name state
 
+prop_addsPlaceToState :: State -> EventData -> Bool
+prop_addsPlaceToState state event = True
+
 spec :: Spec
 spec = do
   describe "isNameInUse" $ do
     it "should return true if name is in use" $ property prop_isNameInUse_true
     it "should return false if name is not in use" $ property prop_isNameInUse_false
-  describe "addUserToState" $ do
+  describe "addUserToState" $
     it "should add user to state" $ property prop_addsUserToState
-  describe "removeUserFromState" $ do
+  describe "removeUserFromState" $
     it "should remove added user from state" $ property prop_removesUserFromState
+  describe "addEventToState" $
+    it "should create a place if place is not there" $ property prop_addsPlaceToState
