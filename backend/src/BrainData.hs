@@ -23,54 +23,68 @@ newtype Name = Name B.ByteString deriving (Show, Eq, Ord)
 type UrlPath = B.ByteString
 type UrlUUID = U.UUID
 type History = [PlaceEventUUID]
-type Places = M.Map UrlUUID Place
 type NamesInUse = S.Set Name
 type Users = M.Map UserUUID User
 type ConnectedUsers = S.Set UserUUID
-type PlaceEvents = M.Map PlaceEventUUID PlaceEvent
 type Connections = M.Map UserUUID WS.Connection
 
 data User = User {
-    userName :: Name
-  , userHistory :: History
-  , userUUID :: UserUUID
+    _userName :: Name
+  , _userHistory :: History
+  , _userUUID :: UserUUID
 } deriving (Show, Eq, Ord)
+
+makeLenses ''User
 
 data PlaceEvent = PlaceEvent {
-  placeEventWhen  :: TC.UTCTime
-  , placeEventUserUUID :: UserUUID
-  , placeEventTo :: UrlUUID
-  , placeEventFrom :: Maybe UrlUUID
-  , placeEventUUID :: PlaceEventUUID
+  _placeEventWhen  :: TC.UTCTime
+  , _placeEventUserUUID :: UserUUID
+  , _placeEventTo :: UrlUUID
+  , _placeEventFrom :: Maybe UrlUUID
+  , _placeEventUUID :: PlaceEventUUID
 } deriving (Show, Eq, Ord, Generic)
 
+makeLenses ''PlaceEvent
+
+type PlaceEvents = M.Map PlaceEventUUID PlaceEvent
+
 data Place = Place {
-    placeTitle :: Title
-  , placeUrl :: UrlPath
-  , placeUsers :: ConnectedUsers
-  , placeHistory :: History
+    _placeTitle :: Title
+  , _placeUrl :: UrlPath
+  , _placeUsers :: ConnectedUsers
+  , _placeHistory :: History
 } deriving (Show, Eq, Ord)
 
+makeLenses ''Place
+
+type Places = M.Map UrlUUID Place
+
 data State = State {
-    stateNamesInUse :: NamesInUse
-  , stateUsers :: Users
-  , statePlaceEvents :: PlaceEvents
-  , statePlaces :: Places
+    _stateNamesInUse :: NamesInUse
+  , _stateUsers :: Users
+  , _statePlaceEvents :: PlaceEvents
+  , _statePlaces :: Places
 } deriving (Show, Eq, Ord)
+
+makeLenses ''State
 
 type MState = MVar State
 type MComms = MVar Connections
 
 data EventMsg = EventMsg {
-    eventMsgUrl      :: URL
-  , eventMsgTitle    :: Title
+    _eventMsgUrl      :: URL
+  , _eventMsgTitle    :: Title
 } deriving (Show, Eq, Ord)
 
+makeLenses ''EventMsg
+
 data EventData = EventData {
-    eventDataUserUUID :: UserUUID
-  , eventDataEventMsg :: EventMsg
-  , eventDataTime     :: TC.UTCTime
+    _eventDataUserUUID :: UserUUID
+  , _eventDataEventMsg :: EventMsg
+  , _eventDataTime     :: TC.UTCTime
 } deriving (Show, Eq, Ord)
+
+makeLenses ''EventData
 
 data FrontendReply = FrontendReply {
 } deriving (Show, Eq, Ord, Generic)

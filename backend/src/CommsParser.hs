@@ -4,7 +4,7 @@ module CommsParser (
 
 import BrainData
 import Control.Monad
-import Control.Lens (set)
+import Control.Lens (set, (.~))
 import qualified Data.ByteString     as B
 import qualified Data.Text.Encoding  as TE
 import qualified URI.ByteString      as URI
@@ -23,7 +23,7 @@ emptyQuery :: URI.Query
 emptyQuery = URI.Query []
 
 cannonicalForm :: URI.URIRef URI.Absolute -> URI.URIRef URI.Absolute
-cannonicalForm = (set URI.queryL emptyQuery) . (set URI.fragmentL Nothing)
+cannonicalForm = (URI.queryL.~emptyQuery) . (URI.fragmentL.~Nothing)
 
 normalizeURI :: URI.URIRef URI.Absolute -> URL
 normalizeURI = URL . URI.normalizeURIRef' URI.aggressiveNormalization . cannonicalForm
