@@ -79,7 +79,7 @@ data EventMsg = EventMsg {
 makeLenses ''EventMsg
 
 data EventData = EventData {
-    _eventDataUserUUID :: UserUUID
+  _eventDataUserUUID :: UserUUID
   , _eventDataEventMsg :: EventMsg
   , _eventDataTime     :: TC.UTCTime
 } deriving (Show, Eq, Ord)

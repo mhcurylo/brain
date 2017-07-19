@@ -35,8 +35,11 @@ prop_removesUserFromState uuid name state = not $ isNameInUse name newState
   where
     newState = removeUserFromState uuid name $ addUserToState uuid name state
 
-prop_addsPlaceToState :: State -> EventData -> Bool
-prop_addsPlaceToState state event = True
+prop_addsPlaceToState :: State -> Name -> EventData -> Bool
+prop_addsPlaceToState state name event = True
+  where
+    newState = addEventToState event . addUserToState (event^.eventDataUserUUID) name $ state
+    pageUUid = urlUUID (event^. eventDataEventMsg . eventMsgUrl)
 
 spec :: Spec
 spec = do
