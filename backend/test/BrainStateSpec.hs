@@ -9,6 +9,9 @@ import Test.Hspec
 import Test.QuickCheck
 import qualified Data.Map            as M
 import qualified Data.Set            as S
+import Control.Lens
+import Control.Lens.At
+import Data.Maybe
 
 main :: IO ()
 main = hspec spec
@@ -22,9 +25,10 @@ prop_isNameInUse_false :: Name -> State -> Bool
 prop_isNameInUse_false name state = not $ isNameInUse name state
 
 prop_addsUserToState :: UserUUID -> Name -> State -> Bool
-prop_addsUserToState uuid name state = M.member uuid (stateUsers newState) && isNameInUse name newState
+prop_addsUserToState uuid name state = containsUser && isNameInUse name newState
   where
     newState = addUserToState uuid name state
+    containsUser = isJust . (^. stateUsers . at uuid) $ newState
 
 prop_removesUserFromState :: UserUUID -> Name -> State -> Bool
 prop_removesUserFromState uuid name state = not $ isNameInUse name newState

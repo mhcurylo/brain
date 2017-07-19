@@ -15,16 +15,16 @@ initComms :: Connections
 initComms = M.empty
 
 isNameInUse :: Name -> State -> Bool
-isNameInUse  name state = state^.(stateNamesInUse . contains name)
+isNameInUse  name = (^. stateNamesInUse . contains name)
 
-addUser :: UserUUID -> Name -> Users -> Users
-addUser uuid name = M.insert uuid $ User name [] uuid
+freshUser :: UserUUID -> Name -> State -> State
+freshUser uuid name = stateUsers . at uuid ?~ User name [] uuid
 
 removeUserFromState :: UserUUID -> Name -> State -> State
-removeUserFromState uuid name = (stateNamesInUse . at name).~Nothing
+removeUserFromState uuid name = (stateNamesInUse . contains name).~False
 
 addUserToState :: UserUUID -> Name -> State -> State
-addUserToState uuid name (State n u e p) = State (S.insert name n) (addUser uuid name u) e p
+addUserToState uuid name = (stateNamesInUse . contains name .~ True) . freshUser uuid name
 
 addEventToState :: EventData -> State -> (State, ([UserUUID], FrontendReply))
 addEventToState event state = (state, ([], FrontendReply))
