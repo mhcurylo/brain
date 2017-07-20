@@ -50,7 +50,7 @@ type PlaceEvents = M.Map PlaceEventUUID PlaceEvent
 
 data Place = Place {
     _placeTitle :: Title
-  , _placeUrl :: UrlPath
+  , _placeUrl :: URL
   , _placeUsers :: ConnectedUsers
   , _placeHistory :: History
 } deriving (Show, Eq, Ord)

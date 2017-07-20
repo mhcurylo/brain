@@ -7,6 +7,7 @@ import qualified Data.UUID.V5        as U5
 import qualified Data.ByteString     as B
 import Control.Lens.At
 import Control.Lens
+import Data.Maybe
 
 initState :: State
 initState = State S.empty M.empty M.empty M.empty
@@ -27,9 +28,18 @@ addUserToState :: UserUUID -> Name -> State -> State
 addUserToState uuid name = (stateNamesInUse . contains name .~ True) . freshUser uuid name
 
 addEventToState :: EventData -> State -> (State, ([UserUUID], FrontendReply))
-addEventToState event state = (state, ([], FrontendReply))
+addEventToState event state = (ensurePlaceExists event state, ([], FrontendReply))
 
 urlUUID :: URL -> UrlUUID
 urlUUID (URL u) = U5.generateNamed U5.namespaceURL $ B.unpack u
 
-
+ensurePlaceExists :: EventData -> State -> State
+ensurePlaceExists event state = case getStatePlace state of
+    Just _ -> state
+    Nothing -> (setStatePlace $ Place (eventMsg^.eventMsgTitle) url' S.empty []) state
+    where
+      getStatePlace = (^. statePlaces . at uuid)
+      setStatePlace = (statePlaces . at uuid ?~)
+      eventMsg = event^.eventDataEventMsg
+      url' = eventMsg^.eventMsgUrl
+      uuid = urlUUID url'
