@@ -41,6 +41,12 @@ prop_addsPlaceToState name event state = isJust $ newState^.(statePlaces . at uu
     newState = fst . addEventToState event . addUserToState (event^.eventDataUserUUID) name $ state
     uuid = urlUUID $ event^.(eventDataEventMsg.eventMsgUrl)
 
+prop_addsPlaceEventToState :: Name -> EventData -> State -> Bool
+prop_addsPlaceEventToState name event state = isJust $ newState^.(statePlaces . at uuid)
+  where
+    newState = fst . addEventToState event . addUserToState (event^.eventDataUserUUID) name $ state
+    uuid = urlUUID $ event^.(eventDataEventMsg.eventMsgUrl)
+
 spec :: Spec
 spec = do
   describe "isNameInUse" $ do

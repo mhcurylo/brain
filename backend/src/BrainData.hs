@@ -41,7 +41,6 @@ data PlaceEvent = PlaceEvent {
   , _placeEventUserUUID :: UserUUID
   , _placeEventTo :: UrlUUID
   , _placeEventFrom :: Maybe UrlUUID
-  , _placeEventUUID :: PlaceEventUUID
 } deriving (Show, Eq, Ord, Generic)
 
 makeLenses ''PlaceEvent

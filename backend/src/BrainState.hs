@@ -28,18 +28,28 @@ addUserToState :: UserUUID -> Name -> State -> State
 addUserToState uuid name = (stateNamesInUse . contains name .~ True) . freshUser uuid name
 
 addEventToState :: EventData -> State -> (State, ([UserUUID], FrontendReply))
-addEventToState event state = (ensurePlaceExists event state, ([], FrontendReply))
+addEventToState event = (\s -> (s, ([], FrontendReply))) . propagatePlaceEvent placeEvent . ensurePlaceExists placeUUID url' title'
+  where
+      eventMsg = event^.eventDataEventMsg
+      time = event^.eventDataTime
+      title' = eventMsg^.eventMsgTitle
+      url' = eventMsg^.eventMsgUrl
+      userUUID = event^.eventDataUserUUID
+      placeUUID = urlUUID url'
+      previousPlace = Just placeUUID
+      placeEvent = PlaceEvent time userUUID placeUUID previousPlace
+
+propagatePlaceEvent :: PlaceEvent -> State -> State
+propagatePlaceEvent pevent = id
+
 
 urlUUID :: URL -> UrlUUID
 urlUUID (URL u) = U5.generateNamed U5.namespaceURL $ B.unpack u
 
-ensurePlaceExists :: EventData -> State -> State
-ensurePlaceExists event state = case getStatePlace state of
+ensurePlaceExists :: UrlUUID -> URL -> Title -> State -> State
+ensurePlaceExists uuid url' title' state = case getStatePlace state of
     Just _ -> state
-    Nothing -> (setStatePlace $ Place (eventMsg^.eventMsgTitle) url' S.empty []) state
+    Nothing -> (setStatePlace $ Place title' url' S.empty []) state
     where
       getStatePlace = (^. statePlaces . at uuid)
       setStatePlace = (statePlaces . at uuid ?~)
-      eventMsg = event^.eventDataEventMsg
-      url' = eventMsg^.eventMsgUrl
-      uuid = urlUUID url'
