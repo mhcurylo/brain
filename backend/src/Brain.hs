@@ -49,7 +49,7 @@ handshake conn mstate mcomms = do
   (name, uuid) <- addUserToMState conn mstate mcomms
   finally (connection uuid conn mstate mcomms) (removeUserFromMState uuid name mstate mcomms)
 
-connection :: UserUUID -> WS.Connection -> MState -> MComms -> IO ()
+connection :: UUid User -> WS.Connection -> MState -> MComms -> IO ()
 connection uuid conn mstate mcomms = forever $ do
   msg <- WS.receiveData conn
   time <- TC.getCurrentTime
@@ -65,24 +65,24 @@ communicateEvent mstate mcomms event = do
   print comms
   print msg
 
-addEventToMState :: MState -> EventData -> IO ([UserUUID], FrontendReply)
+addEventToMState :: MState -> EventData -> IO ([UUid User], FrontendReply)
 addEventToMState mstate event = modifyMVar mstate $ return . addEventToState event
 
-addUserToMState :: WS.Connection -> MState -> MComms -> IO (Name, UserUUID)
+addUserToMState :: WS.Connection -> MState -> MComms -> IO (Name, UUid User)
 addUserToMState conn mstate mcomms = do
   name <- runName
   state <- readMVar mstate
   if isNameInUse name state
     then addUserToMState conn mstate mcomms
     else do
-      uuid <- UserUUID <$> U4.nextRandom
+      uuid <- UUid User <$> U4.nextRandom
       let pname = (\(Name n) -> n) name
       BChar.putStrLn pname
       modifyMVar_ mstate $ return . addUserToState uuid name
       modifyMVar_ mcomms $ return . addUserToComms uuid conn
       return (name, uuid)
 
-removeUserFromMState :: UserUUID -> Name -> MState -> MComms -> IO ()
+removeUserFromMState :: UUid User -> Name -> MState -> MComms -> IO ()
 removeUserFromMState uuid name mstate mcomms = do
   modifyMVar_ mstate $ return . removeUserFromState uuid name
   modifyMVar_ mcomms $ return . removeUserFromComms uuid

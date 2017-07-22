@@ -12,51 +12,61 @@ import qualified Network.WebSockets  as WS
 import qualified Data.UUID           as U
 import qualified Data.Aeson          as A
 import qualified Data.Time.Clock     as TC
+import qualified Data.UUID.V5        as U5
+import Data.Maybe (fromJust)
 import Control.Lens
 import Control.Concurrent (MVar)
 
+namespacePE :: U.UUID
+namespacePE = fromJust . U.fromText $ T.pack "66961c15-6ead-11e7-8001-7446-a0bb45b3"
+
 newtype URL = URL B.ByteString deriving (Show, Eq, Ord)
 newtype Title = Title T.Text deriving (Show, Eq, Ord)
-newtype UserUUID = UserUUID U.UUID deriving (Show, Eq, Ord)
-type PlaceEventUUID = U.UUID
 newtype Name = Name B.ByteString deriving (Show, Eq, Ord)
 type UrlPath = B.ByteString
-type UrlUUID = U.UUID
-type History = [PlaceEventUUID]
 type NamesInUse = S.Set Name
-type Users = M.Map UserUUID User
-type ConnectedUsers = S.Set UserUUID
-type Connections = M.Map UserUUID WS.Connection
+
+newtype UUid a = UUid U.UUID deriving (Show, Eq, Ord)
+
+class GenUUid a where
+  getUUid :: a -> UUid a
+
+instance GenUUid URL where
+  getUUid = UUid . U5.generateNamed U5.namespaceURL . B.unpack . (\(URL u) -> u)
+
+data PlaceEvent = PlaceEvent {
+  _placeEventWhen  :: TC.UTCTime
+  , _placeEventUUid :: UUid PlaceEvent
+  , _placeEventTo :: UUid URL
+  , _placeEventFrom :: Maybe (UUid URL)
+} deriving (Show, Eq, Ord, Generic)
+
+makeLenses ''PlaceEvent
+type History = [UUid PlaceEvent]
 
 data User = User {
     _userName :: Name
   , _userHistory :: History
-  , _userUUID :: UserUUID
+  , _userUUID :: UUid User
 } deriving (Show, Eq, Ord)
-
 makeLenses ''User
 
-data PlaceEvent = PlaceEvent {
-  _placeEventWhen  :: TC.UTCTime
-  , _placeEventUserUUID :: UserUUID
-  , _placeEventTo :: UrlUUID
-  , _placeEventFrom :: Maybe UrlUUID
-} deriving (Show, Eq, Ord, Generic)
+type Users = M.Map (UUid User) User
+type ConnectedUsers = S.Set (UUid User)
+type Connections = M.Map (UUid User) WS.Connection
 
-makeLenses ''PlaceEvent
-
-type PlaceEvents = M.Map PlaceEventUUID PlaceEvent
+type PlaceEvents = M.Map (UUid PlaceEvent) PlaceEvent
 
 data Place = Place {
     _placeTitle :: Title
-  , _placeUrl :: URL
+  , _placeUrl ::URL
   , _placeUsers :: ConnectedUsers
   , _placeHistory :: History
 } deriving (Show, Eq, Ord)
 
 makeLenses ''Place
 
-type Places = M.Map UrlUUID Place
+type Places = M.Map (UUid URL) Place
 
 data State = State {
     _stateNamesInUse :: NamesInUse
@@ -78,7 +88,7 @@ data EventMsg = EventMsg {
 makeLenses ''EventMsg
 
 data EventData = EventData {
-  _eventDataUserUUID :: UserUUID
+    _eventDataUUid     :: UUid User
   , _eventDataEventMsg :: EventMsg
   , _eventDataTime     :: TC.UTCTime
 } deriving (Show, Eq, Ord)

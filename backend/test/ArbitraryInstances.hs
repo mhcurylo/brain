@@ -78,13 +78,13 @@ instance Arbitrary Title where
     text <- listOf1 arbitrary
     return $ Title $ T.pack text
 
-instance Arbitrary UserUUID where
+instance Arbitrary (UUid User) where
   arbitrary = do
     w1 <- arbitrary :: Gen Word32
     w2 <- arbitrary :: Gen Word32
     w3 <- arbitrary :: Gen Word32
     w4 <- arbitrary :: Gen Word32
-    return $ UserUUID $ U.fromWords w1 w2 w3 w4
+    return $ UUid $ U.fromWords w1 w2 w3 w4
 
 instance Arbitrary State where
   arbitrary = do
@@ -110,7 +110,7 @@ instance Arbitrary TC.UTCTime where
 
 instance Arbitrary EventData where
   arbitrary = do
-    userUUID <- arbitrary :: Gen UserUUID
+    userUUID <- arbitrary :: Gen (UUid User)
     event <- arbitrary :: Gen EventMsg
     time <- arbitrary :: Gen TC.UTCTime
     return $ EventData userUUID event time
