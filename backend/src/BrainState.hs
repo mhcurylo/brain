@@ -34,10 +34,10 @@ addEventToState event state = (\s -> (s, ([], FrontendReply))) . propagatePlaceE
       time = event^.eventDataTime
       title' = eventMsg^.eventMsgTitle
       url' = eventMsg^.eventMsgUrl
-      userUUID' = event^.eventDataUUid User
+      userUUID' = event^.eventDataUserUUid
       placeUUID = getUUid url'
       previousEvent = state^?stateUsers.at userUUID'._Just.userHistory.ix 0
-      previousPlace = state^?statePlaceEvents.at previousEvent._Just.placeEventFrom
+      previousPlace = (\pe -> state^?!statePlaceEvents.at pe._Just.placeEventFrom._Just) <$> previousEvent
       placeEvent = PlaceEvent time userUUID' placeUUID previousPlace
 
 propagatePlaceEvent :: PlaceEvent -> State -> State

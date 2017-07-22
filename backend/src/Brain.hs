@@ -75,7 +75,7 @@ addUserToMState conn mstate mcomms = do
   if isNameInUse name state
     then addUserToMState conn mstate mcomms
     else do
-      uuid <- UUid User <$> U4.nextRandom
+      uuid <- UUid <$> U4.nextRandom
       let pname = (\(Name n) -> n) name
       BChar.putStrLn pname
       modifyMVar_ mstate $ return . addUserToState uuid name

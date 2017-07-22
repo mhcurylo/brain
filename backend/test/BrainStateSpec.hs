@@ -24,13 +24,13 @@ prop_isNameInUse_true name = isNameInUse name state
 prop_isNameInUse_false :: Name -> State -> Bool
 prop_isNameInUse_false name state = not $ isNameInUse name state
 
-prop_addsUserToState :: UserUUID -> Name -> State -> Bool
+prop_addsUserToState :: UUid User -> Name -> State -> Bool
 prop_addsUserToState uuid name state = containsUser && isNameInUse name newState
   where
     newState = addUserToState uuid name state
     containsUser = isJust . (^. stateUsers . at uuid) $ newState
 
-prop_removesUserFromState :: UserUUID -> Name -> State -> Bool
+prop_removesUserFromState :: UUid User -> Name -> State -> Bool
 prop_removesUserFromState uuid name state = not $ isNameInUse name newState
   where
     newState = removeUserFromState uuid name $ addUserToState uuid name state
@@ -38,14 +38,14 @@ prop_removesUserFromState uuid name state = not $ isNameInUse name newState
 prop_addsPlaceToState :: Name -> EventData -> State -> Bool
 prop_addsPlaceToState name event state = isJust $ newState^.(statePlaces . at uuid)
   where
-    newState = fst . addEventToState event . addUserToState (event^.eventDataUserUUID) name $ state
-    uuid = urlUUID $ event^.(eventDataEventMsg.eventMsgUrl)
+    newState = fst . addEventToState event . addUserToState (event^.eventDataUserUUid) name $ state
+    uuid = getUUid $ event^.(eventDataEventMsg.eventMsgUrl)
 
 prop_addsPlaceEventToState :: Name -> EventData -> State -> Bool
 prop_addsPlaceEventToState name event state = isJust $ newState^.(statePlaces . at uuid)
   where
-    newState = fst . addEventToState event . addUserToState (event^.eventDataUserUUID) name $ state
-    uuid = urlUUID $ event^.(eventDataEventMsg.eventMsgUrl)
+    newState = fst . addEventToState event . addUserToState (event^.eventDataUserUUid) name $ state
+    uuid = getUUid $ event^.(eventDataEventMsg.eventMsgUrl)
 
 spec :: Spec
 spec = do

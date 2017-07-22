@@ -7,6 +7,7 @@ import GHC.Generics (Generic)
 import qualified Data.Map            as M
 import qualified Data.Text           as T
 import qualified Data.ByteString     as B
+import qualified Data.ByteString.Char8 as BChar
 import qualified Data.Set            as S
 import qualified Network.WebSockets  as WS
 import qualified Data.UUID           as U
@@ -27,21 +28,6 @@ type UrlPath = B.ByteString
 type NamesInUse = S.Set Name
 
 newtype UUid a = UUid U.UUID deriving (Show, Eq, Ord)
-
-class GenUUid a where
-  getUUid :: a -> UUid a
-
-instance GenUUid URL where
-  getUUid = UUid . U5.generateNamed U5.namespaceURL . B.unpack . (\(URL u) -> u)
-
-data PlaceEvent = PlaceEvent {
-  _placeEventWhen  :: TC.UTCTime
-  , _placeEventUUid :: UUid PlaceEvent
-  , _placeEventTo :: UUid URL
-  , _placeEventFrom :: Maybe (UUid URL)
-} deriving (Show, Eq, Ord, Generic)
-
-makeLenses ''PlaceEvent
 type History = [UUid PlaceEvent]
 
 data User = User {
@@ -49,7 +35,27 @@ data User = User {
   , _userHistory :: History
   , _userUUID :: UUid User
 } deriving (Show, Eq, Ord)
+
+
+data PlaceEvent = PlaceEvent {
+  _placeEventWhen  :: TC.UTCTime
+  , _placeEventWho :: UUid User
+  , _placeEventTo :: UUid URL
+  , _placeEventFrom :: Maybe (UUid URL)
+} deriving (Show, Eq, Ord, Generic)
+
+makeLenses ''PlaceEvent
 makeLenses ''User
+
+class GenUUid a where
+  getUUid :: a -> UUid a
+
+instance GenUUid URL where
+  getUUid = UUid . U5.generateNamed U5.namespaceURL . B.unpack . (\(URL u) -> u)
+
+instance GenUUid PlaceEvent where
+  getUUid = UUid . U5.generateNamed U5.namespaceURL . B.unpack . BChar.pack . show
+
 
 type Users = M.Map (UUid User) User
 type ConnectedUsers = S.Set (UUid User)
@@ -88,7 +94,7 @@ data EventMsg = EventMsg {
 makeLenses ''EventMsg
 
 data EventData = EventData {
-    _eventDataUUid     :: UUid User
+    _eventDataUserUUid     :: UUid User
   , _eventDataEventMsg :: EventMsg
   , _eventDataTime     :: TC.UTCTime
 } deriving (Show, Eq, Ord)

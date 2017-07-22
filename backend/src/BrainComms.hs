@@ -7,8 +7,8 @@ import           BrainData
 import qualified Data.Map            as M
 import qualified Network.WebSockets  as WS
 
-addUserToComms :: UserUUID -> WS.Connection -> Connections -> Connections
+addUserToComms :: UUid User -> WS.Connection -> Connections -> Connections
 addUserToComms = M.insert
 
-removeUserFromComms :: UserUUID -> Connections -> Connections
+removeUserFromComms :: UUid User -> Connections -> Connections
 removeUserFromComms = M.delete

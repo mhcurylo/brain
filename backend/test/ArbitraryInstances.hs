@@ -1,18 +1,17 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 module ArbitraryInstances (
     FrontendMsgTest(..)
 ) where
 
 import BrainData
-import Data.List           (intercalate)
 import Control.Applicative (pure, liftA2)
 import Test.QuickCheck
 import Data.Word (Word32)
 import qualified Data.Map            as M
 import qualified Data.Text           as T
 import qualified Data.Time           as TC
-import qualified Data.Time.Clock     as TC
 import qualified Data.ByteString     as B
 import qualified Data.Set            as S
 import qualified Data.UUID           as U
