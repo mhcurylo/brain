@@ -27,9 +27,9 @@ removeUserFromState uuid name = (stateNamesInUse . contains name).~False
 addUserToState :: UUid User -> Name -> State -> State
 addUserToState uuid name = (stateNamesInUse . contains name .~ True) . freshUser uuid name
 
-addEventToState :: EventData -> State -> (State, ([UUid User], FrontendReply))
-addEventToState event state = (\s -> (s, ([], FrontendReply)))
-  . propagatePlaceEvent (PlaceEvent time userUUid placeUUid previousPlace)
+addEventToState :: EventData -> State -> (State, (ConnectedUsers, FrontendReply))
+addEventToState event state = readyReply placeEvent
+  . propagatePlaceEvent placeEvent
   . ensurePlaceExists url' title' $ state
   where
       eventMsg = event^.eventDataEventMsg
@@ -39,12 +39,18 @@ addEventToState event state = (\s -> (s, ([], FrontendReply)))
       url' = eventMsg^.eventMsgUrl
       placeUUid = getUUid url'
       previousPlace = lastVisited userUUid state
+      placeEvent = PlaceEvent time userUUid placeUUid previousPlace
 
 lastVisited :: UUid User -> State -> Maybe (UUid URL)
 lastVisited userUUid state = lastPlace' <$> state^?stateUsers.at userUUid._Just.userHistory.ix 0
   where
     lastPlace' placeUUid = state^?!statePlaceEvents.at placeUUid._Just.placeEventFrom._Just
 
+readyReply :: PlaceEvent -> State -> (State, (ConnectedUsers, FrontendReply))
+readyReply placeEvent state = (state, (users, frontendReply))
+  where
+    users = state^?!statePlaces.at (placeEvent^.placeEventTo)._Just.placeUsers
+    frontendReply = FrontendReply
 
 propagatePlaceEvent :: PlaceEvent -> State -> State
 propagatePlaceEvent placeEvent =
@@ -56,8 +62,10 @@ propagatePlaceEvent placeEvent =
     userUUid = placeEvent^.placeEventWho
     placeEventUUid = getUUid placeEvent
     updatePlaceEvents = statePlaceEvents.at placeEventUUid?~placeEvent
-    updateUserHistory = stateUsers.at userUUid._Just %~ userHistory %~ cons placeEventUUid
-    updatePlace isUserThere placeUUid = statePlaces.at placeUUid._Just %~ (placeHistory %~ cons placeEventUUid) . (placeUsers . contains userUUid .~ isUserThere)
+    updateUserHistory = stateUsers.at userUUid._Just
+      %~ userHistory %~ cons placeEventUUid
+    updatePlace isUserThere placeUUid = statePlaces.at placeUUid._Just
+      %~ (placeHistory %~ cons placeEventUUid) . (placeUsers.contains userUUid.~isUserThere)
 
 ensurePlaceExists :: URL -> Title -> State -> State
 ensurePlaceExists url' title' state = case getStatePlace state of

@@ -65,7 +65,7 @@ communicateEvent mstate mcomms event = do
   print comms
   print msg
 
-addEventToMState :: MState -> EventData -> IO ([UUid User], FrontendReply)
+addEventToMState :: MState -> EventData -> IO (ConnectedUsers, FrontendReply)
 addEventToMState mstate event = modifyMVar mstate $ return . addEventToState event
 
 addUserToMState :: WS.Connection -> MState -> MComms -> IO (Name, UUid User)
