@@ -24,7 +24,6 @@ namespacePE = fromJust . U.fromText $ T.pack "66961c15-6ead-11e7-8001-7446-a0bb4
 newtype URL = URL B.ByteString deriving (Show, Eq, Ord)
 newtype Title = Title T.Text deriving (Show, Eq, Ord)
 newtype Name = Name B.ByteString deriving (Show, Eq, Ord)
-type UrlPath = B.ByteString
 type NamesInUse = S.Set Name
 
 newtype UUid a = UUid U.UUID deriving (Show, Eq, Ord)
@@ -55,7 +54,6 @@ instance GenUUid URL where
 
 instance GenUUid PlaceEvent where
   getUUid = UUid . U5.generateNamed U5.namespaceURL . B.unpack . BChar.pack . show
-
 
 type Users = M.Map (UUid User) User
 type ConnectedUsers = S.Set (UUid User)
