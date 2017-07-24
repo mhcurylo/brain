@@ -50,6 +50,9 @@ generateUrl = generateHttp <++> generateWord <++> listWord dotWord <++> listWord
 queryAndHash :: Gen String
 queryAndHash = "?" ++> eqWord <++ "#" <++> generateWord
 
+generateName :: Gen String
+generateName = generateWord <++ " " <++> generateWord
+  
 data FrontendMsgTest = FrontendMsgTest {
     fmtMsg :: BChar.ByteString
   , fmtUrl :: URL
@@ -67,10 +70,12 @@ instance Arbitrary FrontendMsgTest where
     let msg = toFrontendMsgBS (url' ++ qandh) title'
     return $ FrontendMsgTest msg (URL $ BChar.pack url') (Title $ T.pack title')
 
+
+  
 instance Arbitrary Name where
   arbitrary = do
-    text <- listOf1 arbitrary
-    return $ Name $ B.pack text
+    name <- generateName
+    return $ Name $ BChar.pack name
 
 instance Arbitrary Title where
   arbitrary = do

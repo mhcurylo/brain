@@ -11,6 +11,7 @@ import qualified Data.Map            as M
 import qualified Data.Set            as S
 import Control.Lens
 import Control.Lens.At
+import Debug.Trace
 import Data.Maybe
 
 main :: IO ()
@@ -54,7 +55,7 @@ prop_addsPlacEventToState name event state = isJust (newState^.(statePlaceEvents
     uuid = getUUid $ PlaceEvent time userUUid placeUUid Nothing
 
 prop_addsUserToMostRecentEvent :: Name -> EventData -> EventData -> State -> Bool
-prop_addsUserToMostRecentEvent name event event' state = userAtPlace placeUUid' && not (userAtPlace placeUUid)
+prop_addsUserToMostRecentEvent name event event' state = trace (show newState) (userAtPlace placeUUid' && not (userAtPlace placeUUid))
   where
     (newState, _) = addEventToState (event' & eventDataUserUUid .~ userUUid) . fst . addEventToState event . addUserToState userUUid name $ state
     userUUid = event^.eventDataUserUUid
