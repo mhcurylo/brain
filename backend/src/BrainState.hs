@@ -8,6 +8,7 @@ import qualified Data.UUID.V5        as U5
 import Control.Lens.At
 import Control.Lens
 import Data.Maybe
+import Debug.Trace
 
 initState :: State
 initState = State S.empty M.empty M.empty M.empty
@@ -44,7 +45,7 @@ addEventToState event state = readyReply placeEvent
 lastVisited :: UUid User -> State -> Maybe (UUid URL)
 lastVisited userUUid state = lastPlace' <$> state^?stateUsers.at userUUid._Just.userHistory.ix 0
   where
-    lastPlace' placeUUid = state^?!statePlaceEvents.at placeUUid._Just.placeEventFrom._Just
+    lastPlace' placeUUid = state^?!statePlaceEvents.at placeUUid._Just.placeEventTo
 
 readyReply :: PlaceEvent -> State -> (State, (ConnectedUsers, FrontendReply))
 readyReply placeEvent state = (state, (users, frontendReply))
