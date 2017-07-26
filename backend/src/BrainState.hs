@@ -1,14 +1,10 @@
 module BrainState where
 
-import           BrainData
+import BrainData hiding (at)
 import qualified Data.Map            as M
 import qualified Data.Set            as S
-import qualified Data.ByteString     as B
-import qualified Data.UUID.V5        as U5
-import Control.Lens.At
+import Control.Lens.At               as L
 import Control.Lens
-import Data.Maybe
-import Debug.Trace
 
 initState :: State
 initState = State S.empty M.empty M.empty M.empty
@@ -48,10 +44,10 @@ lastVisited userUUid state = lastPlace' <$> state^?stateUsers.at userUUid._Just.
     lastPlace' placeUUid = state^?!statePlaceEvents.at placeUUid._Just.placeEventTo
 
 readyReply :: PlaceEvent -> State -> (State, (ConnectedUsers, FrontendReply))
-readyReply placeEvent state = (state, (users, frontendReply))
+readyReply (PlaceEvent time' userUUid' placeUUid' previousPlace') state = (state, (users, frontendReply))
   where
-    users = state^?!statePlaces.at (placeEvent^.placeEventTo)._Just.placeUsers
-    frontendReply = FrontendReply
+    users = state^?!statePlaces.at placeUUid'._Just.placeUsers
+    frontendReply = FrontendReply placeEvent
 
 propagatePlaceEvent :: PlaceEvent -> State -> State
 propagatePlaceEvent placeEvent =

@@ -100,11 +100,19 @@ data EventData = EventData {
 makeLenses ''EventData
 
 data FrontendReply = FrontendReply {
+    at :: FrontendMsg
+  , from :: FrontendMsg
+  , req :: FrontendMsg
+  , when :: T.Text
+  , who :: T.Text
 } deriving (Show, Eq, Ord, Generic)
+
+instance A.ToJSON FrontendReply
 
 data FrontendMsg = FrontendMsg {
     url :: T.Text
   , title :: T.Text
 } deriving (Show, Eq, Ord, Generic)
 
+instance A.ToJSON FrontendMsg
 instance A.FromJSON FrontendMsg
