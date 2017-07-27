@@ -6,6 +6,7 @@ module BrainData where
 import GHC.Generics (Generic)
 import qualified Data.Map            as M
 import qualified Data.Text           as T
+import qualified Data.Text.Encoding  as T
 import qualified Data.ByteString     as B
 import qualified Data.ByteString.Char8 as BChar
 import qualified Data.Set            as S
@@ -15,7 +16,7 @@ import qualified Data.Aeson          as A
 import qualified Data.Time.Clock     as TC
 import qualified Data.UUID.V5        as U5
 import Data.Maybe (fromJust)
-import Control.Lens
+import Control.Lens hiding (at)
 import Control.Concurrent (MVar)
 
 namespacePE :: U.UUID
@@ -37,7 +38,7 @@ data User = User {
 
 
 data PlaceEvent = PlaceEvent {
-  _placeEventWhen  :: TC.UTCTime
+    _placeEventWhen  :: TC.UTCTime
   , _placeEventWho :: UUid User
   , _placeEventTo :: UUid URL
   , _placeEventFrom :: Maybe (UUid URL)
@@ -63,7 +64,7 @@ type PlaceEvents = M.Map (UUid PlaceEvent) PlaceEvent
 
 data Place = Place {
     _placeTitle :: Title
-  , _placeUrl ::URL
+  , _placeUrl :: URL
   , _placeUsers :: ConnectedUsers
   , _placeHistory :: History
 } deriving (Show, Eq, Ord)
@@ -101,13 +102,18 @@ makeLenses ''EventData
 
 data FrontendReply = FrontendReply {
     at :: FrontendMsg
-  , from :: FrontendMsg
+  , from :: Maybe FrontendMsg
   , req :: FrontendMsg
   , when :: T.Text
   , who :: T.Text
 } deriving (Show, Eq, Ord, Generic)
 
+placeFrontendMsg :: Place -> FrontendMsg
+placeFrontendMsg (Place (Title t) (URL u) _ _) = FrontendMsg (T.decodeUtf8 u) t
+
 instance A.ToJSON FrontendReply
+
+type FrontendReplies = [(ConnectedUsers, FrontendReply)]
 
 data FrontendMsg = FrontendMsg {
     url :: T.Text

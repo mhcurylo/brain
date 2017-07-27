@@ -3,6 +3,8 @@ module BrainState where
 import BrainData hiding (at)
 import qualified Data.Map            as M
 import qualified Data.Set            as S
+import qualified Data.Text           as T
+import qualified Data.Text.Encoding  as T
 import Control.Lens.At               as L
 import Control.Lens
 
@@ -24,7 +26,7 @@ removeUserFromState uuid name = (stateNamesInUse . contains name).~False
 addUserToState :: UUid User -> Name -> State -> State
 addUserToState uuid name = (stateNamesInUse . contains name .~ True) . freshUser uuid name
 
-addEventToState :: EventData -> State -> (State, (ConnectedUsers, FrontendReply))
+addEventToState :: EventData -> State -> (State, FrontendReplies)
 addEventToState event state = readyReply placeEvent
   . propagatePlaceEvent placeEvent
   . ensurePlaceExists url' title' $ state
@@ -43,11 +45,14 @@ lastVisited userUUid state = lastPlace' <$> state^?stateUsers.at userUUid._Just.
   where
     lastPlace' placeUUid = state^?!statePlaceEvents.at placeUUid._Just.placeEventTo
 
-readyReply :: PlaceEvent -> State -> (State, (ConnectedUsers, FrontendReply))
-readyReply (PlaceEvent time' userUUid' placeUUid' previousPlace') state = (state, (users, frontendReply))
+readyReply :: PlaceEvent -> State -> (State, FrontendReplies)
+readyReply (PlaceEvent time' userUUid' placeUUid' previousPlace') state = (state, [(users, frontendReply)])
   where
     users = state^?!statePlaces.at placeUUid'._Just.placeUsers
-    frontendReply = FrontendReply placeEvent
+    (Name name) = state^?!stateUsers.at userUUid'._Just.userName
+    at' = placeFrontendMsg $ state^?!statePlaces. at placeUUid'._Just
+    from' = fmap (placeFrontendMsg . (\u -> state^?!statePlaces. at u._Just)) previousPlace'
+    frontendReply = FrontendReply at' from' at' (T.pack $ show time') (T.decodeUtf8 name)
 
 propagatePlaceEvent :: PlaceEvent -> State -> State
 propagatePlaceEvent placeEvent =

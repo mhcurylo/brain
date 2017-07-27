@@ -60,12 +60,12 @@ connection uuid conn mstate mcomms = forever $ do
 
 communicateEvent :: MState -> MComms -> EventData -> IO ()
 communicateEvent mstate mcomms event = do
-  (comms, msg) <- addEventToMState mstate event
+  [(comms, msg)] <- addEventToMState mstate event
   print "Communicating"
   print comms
   print msg
 
-addEventToMState :: MState -> EventData -> IO (ConnectedUsers, FrontendReply)
+addEventToMState :: MState -> EventData -> IO FrontendReplies
 addEventToMState mstate event = modifyMVar mstate $ return . addEventToState event
 
 addUserToMState :: WS.Connection -> MState -> MComms -> IO (Name, UUid User)

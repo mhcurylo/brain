@@ -4,11 +4,13 @@ module BrainStateSpec (main, spec) where
 
 import ArbitraryInstances()
 import BrainState
-import BrainData
+import BrainData hiding (at)
 import Test.Hspec
 import Test.QuickCheck
 import qualified Data.Map            as M
 import qualified Data.Set            as S
+import qualified Data.Text           as T
+import qualified Data.Text.Encoding  as T
 import Control.Lens
 import Data.Maybe
 
@@ -64,21 +66,22 @@ prop_addsUserToMostRecentEvent name event event' state = userAtPlace placeUUid' 
 prop_returnsProperUserList :: Name -> Name -> EventData -> EventData -> State -> Bool
 prop_returnsProperUserList name name' event event' state = users == S.fromList [userUUid', userUUid]
   where
-    (_, (users, _)) = addEventToState event' . fst . addEventToState (event' & eventDataUserUUid .~ userUUid) . fst . addEventToState event . addUserToState userUUid name . addUserToState userUUid' name' $ state
+    (_, [(users, _)]) = addEventToState event' . fst . addEventToState (event' & eventDataUserUUid .~ userUUid) . fst . addEventToState event . addUserToState userUUid name . addUserToState userUUid' name' $ state
     userUUid = event^.eventDataUserUUid
     userUUid' = event'^.eventDataUserUUid
 
 prop_returnsProperFrontendReply :: Name -> EventData -> EventData -> State -> Bool
 prop_returnsProperFrontendReply name event event' state = frontendReply == frontendReply'
   where
-    (_, (_, frontendReply)) = addEventToState (event' & eventDataUserUUid .~ userUUid) . fst . addEventToState event . addUserToState userUUid name $ state
+    (_, [(_, frontendReply)]) = addEventToState (event' & eventDataUserUUid .~ userUUid) . fst . addEventToState event . addUserToState userUUid name $ state
     userUUid = event^.eventDataUserUUid
     fmsg = eventToFrontend event
-    fmsg' = eventToFrontend event
-    frontendReply' = FrontendReply fmsg' fmsg fmsg' event'.^eventDataTime name
+    fmsg' = eventToFrontend event'
+    (Name name') = name
+    frontendReply' = FrontendReply fmsg' (Just fmsg) fmsg' (T.pack . show $ event'^.eventDataTime) (T.decodeUtf8 name')
 
 eventToFrontend :: EventData -> FrontendMsg
-  eventToFrontend event = FrontendMsg event.^eventDataEventMsg.eventMsgUrl event.^eventDataEventMsg.eventMsgTitle
+eventToFrontend (EventData _ (EventMsg (URL u) (Title t)) _) = FrontendMsg (T.decodeUtf8 u) t
 
 spec = do
   describe "isNameInUse" $ do
@@ -93,3 +96,4 @@ spec = do
     it "should add PlaceEvent to state" $ property prop_addsPlacEventToState
     it "should clean the user from old place"  $ property prop_addsUserToMostRecentEvent
     it "should return users-at-place"  $ property prop_returnsProperUserList
+    it "should return the frontendReply"  $ property prop_returnsProperFrontendReply
