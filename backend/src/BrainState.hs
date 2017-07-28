@@ -27,7 +27,8 @@ addUserToState :: UUid User -> Name -> State -> State
 addUserToState uuid name = (stateNamesInUse . contains name .~ True) . freshUser uuid name
 
 addEventToState :: EventData -> State -> (State, FrontendReplies)
-addEventToState event state = readyReply placeEvent
+addEventToState event state = maybe id findOtherInterestedPlaces previousPlace
+  . readyReply placeEvent
   . propagatePlaceEvent placeEvent
   . ensurePlaceExists url' title' $ state
   where
@@ -44,6 +45,16 @@ lastVisited :: UUid User -> State -> Maybe (UUid URL)
 lastVisited userUUid state = lastPlace' <$> state^?stateUsers.at userUUid._Just.userHistory.ix 0
   where
     lastPlace' placeUUid = state^?!statePlaceEvents.at placeUUid._Just.placeEventTo
+
+findOtherInterestedPlaces :: UUid URL -> (State, FrontendReplies) -> (State, FrontendReplies)
+findOtherInterestedPlaces uuid (state, xs@(_, re):_) = (state, (readyReplyForPlace re state uuid):xs:[])
+
+readyReplyForPlace :: FrontendReply -> State -> UUid URL -> (ConnectedUsers, FrontendReply)
+readyReplyForPlace (FrontendReply a f r wn wh) state uuid = (users, FrontendReply a f req wn wh)
+  where
+    place = state^?!statePlaces.at uuid._Just
+    users = place^.placeUsers
+    req = placeFrontendMsg place
 
 readyReply :: PlaceEvent -> State -> (State, FrontendReplies)
 readyReply (PlaceEvent time' userUUid' placeUUid' previousPlace') state = (state, [(users, frontendReply)])

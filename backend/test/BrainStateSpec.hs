@@ -63,22 +63,25 @@ prop_addsUserToMostRecentEvent name event event' state = userAtPlace placeUUid' 
     placeUUid' = getUUid $ event'^.eventDataEventMsg^.eventMsgUrl
     userAtPlace uuid = fromMaybe False $ newState^?(statePlaces . at uuid)._Just.placeUsers.contains userUUid
 
-prop_returnsProperUserList :: Name -> Name -> EventData -> EventData -> State -> Bool
-prop_returnsProperUserList name name' event event' state = users == S.fromList [userUUid', userUUid]
+prop_returnsProperUserLists :: Name -> Name -> EventData -> EventData -> State -> Bool
+prop_returnsProperUserLists name name' event event' state = users == S.fromList [userUUid', userUUid]
   where
-    (_, [(users, _)]) = addEventToState event' . fst . addEventToState (event' & eventDataUserUUid .~ userUUid) . fst . addEventToState event . addUserToState userUUid name . addUserToState userUUid' name' $ state
+    (_, (users, _):_) = addEventToState event' . fst . addEventToState (event' & eventDataUserUUid .~ userUUid) . fst . addEventToState event . addUserToState userUUid name . addUserToState userUUid' name' $ state
     userUUid = event^.eventDataUserUUid
     userUUid' = event'^.eventDataUserUUid
 
-prop_returnsProperFrontendReply :: Name -> EventData -> EventData -> State -> Bool
-prop_returnsProperFrontendReply name event event' state = frontendReply == frontendReply'
+prop_returnsProperFrontendReplies :: Name -> EventData -> EventData -> State -> Bool
+prop_returnsProperFrontendReplies name event event' state = replyAt == replyAt' && replyFrom == replyFrom'
   where
-    (_, [(_, frontendReply)]) = addEventToState (event' & eventDataUserUUid .~ userUUid) . fst . addEventToState event . addUserToState userUUid name $ state
+    (_, (_, replyFrom):(_, replyAt):_) = addEventToState (event' & eventDataUserUUid .~ userUUid) . fst . addEventToState event . addUserToState userUUid name $ state
     userUUid = event^.eventDataUserUUid
     fmsg = eventToFrontend event
     fmsg' = eventToFrontend event'
-    (Name name') = name
-    frontendReply' = FrontendReply fmsg' (Just fmsg) fmsg' (T.pack . show $ event'^.eventDataTime) (T.decodeUtf8 name')
+    (Name name'') = name
+    time' = T.pack . show $ event'^.eventDataTime
+    name' = T.decodeUtf8 name''
+    replyAt' = FrontendReply fmsg' (Just fmsg) fmsg' time' name'
+    replyFrom' = FrontendReply fmsg' (Just fmsg) fmsg time' name'
 
 eventToFrontend :: EventData -> FrontendMsg
 eventToFrontend (EventData _ (EventMsg (URL u) (Title t)) _) = FrontendMsg (T.decodeUtf8 u) t
@@ -95,5 +98,5 @@ spec = do
     it "should create a place if place is not there" $ property prop_addsPlaceToState
     it "should add PlaceEvent to state" $ property prop_addsPlacEventToState
     it "should clean the user from old place"  $ property prop_addsUserToMostRecentEvent
-    it "should return users-at-place"  $ property prop_returnsProperUserList
-    it "should return the frontendReply"  $ property prop_returnsProperFrontendReply
+    it "should return users-at-place"  $ property prop_returnsProperUserLists
+    it "should return the frontendReply"  $ property prop_returnsProperFrontendReplies
