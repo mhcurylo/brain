@@ -9,8 +9,11 @@ import BrainState
 import NameGen
 import BrainComms
 import CommsParser (parseEventMsg)
+import qualified Data.Aeson                     as A
 import qualified Data.ByteString                as B
 import qualified Data.ByteString.Char8          as BChar
+import qualified Data.Set                       as S
+import qualified Data.Map                       as M
 import qualified Network.HTTP.Types             as Http
 import qualified Network.Wai                    as Wai
 import qualified Network.Wai.Handler.Warp       as Warp
@@ -18,9 +21,11 @@ import qualified Network.Wai.Handler.WebSockets as WS
 import qualified Network.WebSockets             as WS
 import qualified Data.UUID.V4                   as U4
 import qualified Data.Time.Clock                as TC
+import qualified Control.Lens.At                as L
+import Control.Lens
 import Data.Maybe (isJust, fromJust)
 import Control.Exception (finally)
-import Control.Monad (forever)
+import Control.Monad (forever, forM_)
 import Control.Concurrent (newMVar, modifyMVar, modifyMVar_, readMVar)
 
 runBrain :: Int -> IO ()
@@ -60,10 +65,15 @@ connection uuid conn mstate mcomms = forever $ do
 
 communicateEvent :: MState -> MComms -> EventData -> IO ()
 communicateEvent mstate mcomms event = do
-  [(comms, msg)] <- addEventToMState mstate event
-  print "Communicating"
-  print comms
-  print msg
+  frontendReplies <- addEventToMState mstate event
+  forM_ frontendReplies (sendReplies mcomms)
+
+sendReplies :: MComms -> (ConnectedUsers, FrontendReply) -> IO ()
+sendReplies mcomms (users, reply) = do
+  comms <- readMVar mcomms
+  let repJSON = A.encode reply
+  let usersWS = M.elems $ M.intersection comms (M.fromSet id users)
+  forM_ usersWS (`WS.sendTextData` repJSON)
 
 addEventToMState :: MState -> EventData -> IO FrontendReplies
 addEventToMState mstate event = modifyMVar mstate $ return . addEventToState event
