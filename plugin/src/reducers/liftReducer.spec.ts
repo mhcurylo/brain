@@ -1,7 +1,7 @@
 import { should } from 'chai';
 import { createStore } from '../store/store';
 import { ActionEvent, ActionStore, MetaState, Reducer, Store,  Subscription } from '../store/store.interface';
-import { CountState, createMetaStateFixture, emptyAction, incAction, reducer } from '../testing/fixtures';
+import { CountState, createMetaStateFixture, emptyAction, incAction } from '../testing/fixtures';
 import { liftReducer } from './liftReducer';
 
 should();
