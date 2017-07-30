@@ -23,4 +23,4 @@ titles :: [B.ByteString]
 titles = map (`B.append` " ") ["Brown", "Yellow", "Red", "Green", "Black", "White", "Irish", "Crown", "Savage", "Bonzai"]
 
 actors :: [B.ByteString]
-actors = ["panda", "Aphrodite", "Zeus", "wolverine", "cat", "capybara"]
+actors = ["Panda", "Aphrodite", "Zeus", "Wolverine", "Cat", "Capybara"]
