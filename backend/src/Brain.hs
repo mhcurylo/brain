@@ -12,7 +12,6 @@ import CommsParser (parseEventMsg)
 import qualified Data.Aeson                     as A
 import qualified Data.ByteString                as B
 import qualified Data.ByteString.Char8          as BChar
-import qualified Data.Set                       as S
 import qualified Data.Map                       as M
 import qualified Network.HTTP.Types             as Http
 import qualified Network.Wai                    as Wai
@@ -21,8 +20,6 @@ import qualified Network.Wai.Handler.WebSockets as WS
 import qualified Network.WebSockets             as WS
 import qualified Data.UUID.V4                   as U4
 import qualified Data.Time.Clock                as TC
-import qualified Control.Lens.At                as L
-import Control.Lens
 import Data.Maybe (isJust, fromJust)
 import Control.Exception (finally)
 import Control.Monad (forever, forM_)
