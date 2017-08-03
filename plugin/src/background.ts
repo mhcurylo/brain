@@ -3,12 +3,18 @@ import { fmap, Maybe } from './libs/maybe';
 import { initSockets } from './libs/websockets';
 import { addPageEvent } from './reducers/pages/actions/action.creators';
 import { Page, PageEvent, Place } from './state/state.interface';
+import { ActionEvent } from './store/store.interface';
 
 (window as any).next = next;
 
 // ASSIGNING LISTENERS
 
-const send = initSockets('ws://localhost:3000', (msg: MessageEvent) => typeof msg === "string" ? "" : next(addPageEvent(msg.data)));
+const send = initSockets('ws://localhost:3000', (res: MessageEvent) => {
+    const msg: ActionEvent = JSON.parse(res.data);
+    console.log(msg);
+
+    if (!(typeof msg === 'string')) {next(msg)};
+});
 
 const tabActivated = (activeInfo: chrome.tabs.TabActiveInfo): void => {
     chrome.tabs.get(activeInfo.tabId, ({ url, title }: chrome.tabs.Tab) => {

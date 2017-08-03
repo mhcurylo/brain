@@ -22,6 +22,7 @@ export interface Pages {
 }
 
 export interface State {
+    readonly canonical: Map<string, string>;
     readonly pages: Pages;
     readonly who: string;
 }

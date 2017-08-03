@@ -14,7 +14,6 @@ const updateState = (newState: State): void => {
 
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
         const url: Maybe<string> = tabs[0].url;
-
         setState(url);
         shouldRedraw = true;
     });

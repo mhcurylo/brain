@@ -61,6 +61,7 @@ export const pageShownAction: PageShownAction = {
 }
 
 export const initStateWithPages: State = {
+    canonical: new Map(),
     pages: {
         'http://here.there.er': {
             at: placeOfErr,
