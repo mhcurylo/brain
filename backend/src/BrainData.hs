@@ -1,9 +1,7 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module BrainData where
 
-import GHC.Generics (Generic)
 import qualified Data.Map            as M
 import qualified Data.Text           as T
 import qualified Data.Text.Encoding  as T
@@ -13,6 +11,7 @@ import qualified Data.Set            as S
 import qualified Network.WebSockets  as WS
 import qualified Data.UUID           as U
 import qualified Data.Aeson          as A
+import qualified Data.Aeson.TH       as A
 import qualified Data.Time.Clock     as TC
 import qualified Data.UUID.V5        as U5
 import Data.Maybe (fromJust)
@@ -36,13 +35,12 @@ data User = User {
   , _userUUID :: UUid User
 } deriving (Show, Eq, Ord)
 
-
 data PlaceEvent = PlaceEvent {
     _placeEventWhen  :: TC.UTCTime
   , _placeEventWho :: UUid User
   , _placeEventTo :: UUid URL
   , _placeEventFrom :: Maybe (UUid URL)
-} deriving (Show, Eq, Ord, Generic)
+} deriving (Show, Eq, Ord)
 
 makeLenses ''PlaceEvent
 makeLenses ''User
@@ -79,7 +77,6 @@ data State = State {
   , _statePlaceEvents :: PlaceEvents
   , _statePlaces :: Places
 } deriving (Show, Eq, Ord)
-
 makeLenses ''State
 
 type MState = MVar State
@@ -89,7 +86,6 @@ data EventMsg = EventMsg {
     _eventMsgUrl      :: URL
   , _eventMsgTitle    :: Title
 } deriving (Show, Eq, Ord)
-
 makeLenses ''EventMsg
 
 data EventData = EventData {
@@ -97,28 +93,39 @@ data EventData = EventData {
   , _eventDataEventMsg :: EventMsg
   , _eventDataTime     :: TC.UTCTime
 } deriving (Show, Eq, Ord)
-
 makeLenses ''EventData
 
+data FrontendMsg = FrontendMsg {
+    _url :: T.Text
+  , _title :: T.Text
+} deriving (Show, Eq, Ord)
+makeLenses ''FrontendMsg
+A.deriveJSON A.defaultOptions{A.fieldLabelModifier = drop 1} ''FrontendMsg
+
+data ACTION_KIND = PAGE_EVENT_ACTION | CANONICAL_URL_ACTION deriving (Show, Eq, Ord);
+A.deriveJSON A.defaultOptions{A.fieldLabelModifier = drop 1} ''ACTION_KIND
+
+data ActionPayload = PageEventPayload {
+    _at :: FrontendMsg
+  , _from :: Maybe FrontendMsg
+  , _req :: FrontendMsg
+  , _when :: T.Text
+  , _who :: T.Text
+  } | CanonicalActionPayload {
+    _original :: T.Text
+  , _canonical :: T.Text
+  } deriving (Show, Eq, Ord);
+makeLenses ''ActionPayload
+A.deriveJSON A.defaultOptions{A.fieldLabelModifier = drop 1, A.sumEncoding = A.UntaggedValue} ''ActionPayload
+
 data FrontendReply = FrontendReply {
-    at :: FrontendMsg
-  , from :: Maybe FrontendMsg
-  , req :: FrontendMsg
-  , when :: T.Text
-  , who :: T.Text
-} deriving (Show, Eq, Ord, Generic)
+    _kind :: ACTION_KIND
+  , _payload :: ActionPayload
+} deriving (Show, Eq, Ord)
+makeLenses ''FrontendReply
+A.deriveJSON A.defaultOptions{A.fieldLabelModifier = drop 1} ''FrontendReply
 
 placeFrontendMsg :: Place -> FrontendMsg
 placeFrontendMsg (Place (Title t) (URL u) _ _) = FrontendMsg (T.decodeUtf8 u) t
 
-instance A.ToJSON FrontendReply
-
 type FrontendReplies = [(ConnectedUsers, FrontendReply)]
-
-data FrontendMsg = FrontendMsg {
-    url :: T.Text
-  , title :: T.Text
-} deriving (Show, Eq, Ord, Generic)
-
-instance A.ToJSON FrontendMsg
-instance A.FromJSON FrontendMsg
