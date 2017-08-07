@@ -1,19 +1,21 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module BrainData where
 
+import qualified Data.Aeson          as A
 import qualified Data.Map            as M
 import qualified Data.Text           as T
 import qualified Data.Text.Encoding  as T
 import qualified Data.ByteString     as B
-import qualified Data.ByteString.Char8 as BChar
 import qualified Data.Set            as S
 import qualified Network.WebSockets  as WS
 import qualified Data.UUID           as U
-import qualified Data.Aeson          as A
-import qualified Data.Aeson.TH       as A
 import qualified Data.Time.Clock     as TC
 import qualified Data.UUID.V5        as U5
+import qualified Data.Word           as W
 import Data.Maybe (fromJust)
 import Control.Lens hiding (at)
 import Control.Concurrent (MVar)
@@ -21,9 +23,15 @@ import Control.Concurrent (MVar)
 namespacePE :: U.UUID
 namespacePE = fromJust . U.fromText $ T.pack "66961c15-6ead-11e7-8001-7446-a0bb45b3"
 
-newtype URL = URL B.ByteString deriving (Show, Eq, Ord)
-newtype Title = Title T.Text deriving (Show, Eq, Ord)
-newtype Name = Name B.ByteString deriving (Show, Eq, Ord)
+unpackText :: T.Text -> [W.Word8]
+unpackText = B.unpack . T.encodeUtf8
+
+newtype URL = URL { _uRL :: T.Text } deriving (Show, Eq, Ord, A.FromJSON, A.ToJSON)
+makeLenses ''URL
+newtype Title = Title {_tITLE :: T.Text } deriving (Show, Eq, Ord, A.FromJSON, A.ToJSON)
+makeLenses ''Title
+newtype Name = Name {_nAME :: T.Text} deriving (Show, Eq, Ord, A.FromJSON, A.ToJSON)
+makeLenses ''Name
 type NamesInUse = S.Set Name
 
 newtype UUid a = UUid U.UUID deriving (Show, Eq, Ord)
@@ -49,10 +57,10 @@ class GenUUid a where
   getUUid :: a -> UUid a
 
 instance GenUUid URL where
-  getUUid = UUid . U5.generateNamed U5.namespaceURL . B.unpack . (\(URL u) -> u)
+  getUUid = UUid . U5.generateNamed U5.namespaceURL . unpackText . (\(URL u) -> u)
 
 instance GenUUid PlaceEvent where
-  getUUid = UUid . U5.generateNamed U5.namespaceURL . B.unpack . BChar.pack . show
+  getUUid = UUid . U5.generateNamed namespacePE . unpackText . T.pack . show
 
 type Users = M.Map (UUid User) User
 type ConnectedUsers = S.Set (UUid User)
@@ -81,51 +89,3 @@ makeLenses ''State
 
 type MState = MVar State
 type MComms = MVar Connections
-
-data EventMsg = EventMsg {
-    _eventMsgUrl      :: URL
-  , _eventMsgTitle    :: Title
-} deriving (Show, Eq, Ord)
-makeLenses ''EventMsg
-
-data EventData = EventData {
-    _eventDataUserUUid     :: UUid User
-  , _eventDataEventMsg :: EventMsg
-  , _eventDataTime     :: TC.UTCTime
-} deriving (Show, Eq, Ord)
-makeLenses ''EventData
-
-data FrontendMsg = FrontendMsg {
-    _url :: T.Text
-  , _title :: T.Text
-} deriving (Show, Eq, Ord)
-makeLenses ''FrontendMsg
-A.deriveJSON A.defaultOptions{A.fieldLabelModifier = drop 1} ''FrontendMsg
-
-data ACTION_KIND = PAGE_EVENT_ACTION | CANONICAL_URL_ACTION deriving (Show, Eq, Ord);
-A.deriveJSON A.defaultOptions{A.fieldLabelModifier = drop 1} ''ACTION_KIND
-
-data ActionPayload = PageEventPayload {
-    _at :: FrontendMsg
-  , _from :: Maybe FrontendMsg
-  , _req :: FrontendMsg
-  , _when :: T.Text
-  , _who :: T.Text
-  } | CanonicalActionPayload {
-    _original :: T.Text
-  , _canonical :: T.Text
-  } deriving (Show, Eq, Ord);
-makeLenses ''ActionPayload
-A.deriveJSON A.defaultOptions{A.fieldLabelModifier = drop 1, A.sumEncoding = A.UntaggedValue} ''ActionPayload
-
-data FrontendReply = FrontendReply {
-    _kind :: ACTION_KIND
-  , _payload :: ActionPayload
-} deriving (Show, Eq, Ord)
-makeLenses ''FrontendReply
-A.deriveJSON A.defaultOptions{A.fieldLabelModifier = drop 1} ''FrontendReply
-
-placeFrontendMsg :: Place -> FrontendMsg
-placeFrontendMsg (Place (Title t) (URL u) _ _) = FrontendMsg (T.decodeUtf8 u) t
-
-type FrontendReplies = [(ConnectedUsers, FrontendReply)]

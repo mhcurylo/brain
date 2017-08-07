@@ -5,6 +5,7 @@ module Brain
     ) where
 
 import BrainData
+import BrainMsg
 import BrainState
 import NameGen
 import BrainComms
@@ -53,16 +54,15 @@ handshake conn mstate mcomms = do
 
 connection :: UUid User -> WS.Connection -> MState -> MComms -> IO ()
 connection uuid conn mstate mcomms = forever $ do
-  msg <- WS.receiveData conn
   time <- TC.getCurrentTime
-  let msg' = parseEventMsg msg
+  msg <- parseEventMsg <$> WS.receiveData conn
   if isJust msg'
-    then communicateEvent mstate mcomms $ EventData uuid (fromJust msg') time
-    else print $ "Error in parsing" ++ show msg
+    then communicateEvent mstate mcomms msg uuid time
+    else print $ "Error in parsing " ++ show msg
 
-communicateEvent :: MState -> MComms -> EventData -> IO ()
-communicateEvent mstate mcomms event = do
-  frontendReplies <- addEventToMState mstate event
+communicateEvent :: MState -> MComms -> FrontendMsg -> UUid User -> TC.Time -> IO ()
+communicateEvent mstate mcomms msg uuid time = do
+  frontendReplies <- addEventToMState mstate msg uuid time
   forM_ frontendReplies (sendReplies mcomms)
 
 sendReplies :: MComms -> (ConnectedUsers, FrontendReply) -> IO ()
@@ -72,8 +72,8 @@ sendReplies mcomms (users, reply) = do
   let usersWS = M.elems $ M.intersection comms (M.fromSet id users)
   forM_ usersWS (`WS.sendTextData` repJSON)
 
-addEventToMState :: MState -> EventData -> IO FrontendReplies
-addEventToMState mstate event = modifyMVar mstate $ return . addEventToState event
+addEventToMState :: MState -> FrontendMsg -> UUid User -> TC.Time -> IO FrontendReplies
+addEventToMState mstate event uuid time = modifyMVar mstate $ return . addEventToState event uuid time
 
 addUserToMState :: WS.Connection -> MState -> MComms -> IO (Name, UUid User)
 addUserToMState conn mstate mcomms = do

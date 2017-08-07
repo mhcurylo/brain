@@ -15,7 +15,7 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Brain, BrainData, NameGen, BrainComms, BrainState, CommsParser
+  exposed-modules:     Brain, BrainData, NameGen, BrainComms, BrainState, CommsParser, BrainMsg
   build-depends:       base >= 4.7 && < 5
                      , aeson
                      , text

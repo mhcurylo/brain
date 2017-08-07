@@ -1,32 +1,31 @@
-module CommsParser (
-    parseEventMsg
-) where
+module CommsParser where
 
 import BrainData
-import Control.Monad
-import Control.Lens (set, (.~))
+import BrainMsg
+import Control.Lens ((.~), (^.))
 import qualified Data.ByteString     as B
-import qualified Data.Text.Encoding  as TE
+import qualified Data.Text           as T
+import qualified Data.Text.Encoding  as T
 import qualified URI.ByteString      as URI
 import qualified Data.Aeson          as A
-
-parseEventMsg :: B.ByteString -> Maybe EventMsg
-parseEventMsg = frontendMsgToEventMsg <=< parseFrontendMsg
-
-frontendMsgToEventMsg :: FrontendMsg -> Maybe EventMsg
-frontendMsgToEventMsg (FrontendMsg u t) = case URI.parseURI URI.strictURIParserOptions $ TE.encodeUtf8 u of
-   Right uri -> Just $ EventMsg  (normalizeURI uri) (Title t)
-   Left _ -> Nothing
 
 
 emptyQuery :: URI.Query
 emptyQuery = URI.Query []
 
-cannonicalForm :: URI.URIRef URI.Absolute -> URI.URIRef URI.Absolute
-cannonicalForm = (URI.queryL.~emptyQuery) . (URI.fragmentL.~Nothing)
+canonicalForm :: URI.URIRef URI.Absolute -> URI.URIRef URI.Absolute
+canonicalForm = (URI.queryL.~emptyQuery) . (URI.fragmentL.~Nothing)
 
-normalizeURI :: URI.URIRef URI.Absolute -> URL
-normalizeURI = URL . URI.normalizeURIRef' URI.aggressiveNormalization . cannonicalForm
+normalizeURI :: URI.URIRef URI.Absolute -> T.Text
+normalizeURI = T.decodeUtf8 . URI.normalizeURIRef' URI.aggressiveNormalization . canonicalForm
+
+normalizeTextURI :: T.Text -> Either URI.URIParseError T.Text
+normalizeTextURI = fmap normalizeURI . URI.parseURI URI.strictURIParserOptions . T.encodeUtf8
+
+normalizeFrontendMsg :: FrontendMsg -> Maybe FrontendMsg
+normalizeFrontendMsg msg = case normalizeTextURI $ msg^.url.uRL of
+  Right url' -> Just $ (url.uRL.~url') msg
+  Left _ -> Nothing
 
 parseFrontendMsg :: B.ByteString -> Maybe FrontendMsg
 parseFrontendMsg = A.decodeStrict

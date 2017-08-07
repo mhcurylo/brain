@@ -1,10 +1,13 @@
+{-# LANGUAGE DataKinds #-}
 module BrainState where
 
-import BrainData hiding (at)
+import BrainData
+import BrainMsg hiding (at)
 import qualified Data.Map            as M
 import qualified Data.Set            as S
 import qualified Data.Text           as T
 import qualified Data.Text.Encoding  as T
+import qualified Data.Time.Clock     as TC
 import Control.Lens.At               as L
 import Control.Lens
 
@@ -26,17 +29,12 @@ removeUserFromState uuid name = (stateNamesInUse . contains name).~False
 addUserToState :: UUid User -> Name -> State -> State
 addUserToState uuid name = (stateNamesInUse . contains name .~ True) . freshUser uuid name
 
-addEventToState :: EventData -> State -> (State, FrontendReplies)
-addEventToState event state = maybe id findOtherInterestedPlaces previousPlace
+addEventToState :: FrontendMsg -> UUid User -> TC.UTCTime -> State -> (State, FrontendReplies)
+addEventToState (FrontendMsg url' title') userUUid time state = maybe id findOtherInterestedPlaces previousPlace
   . readyReply placeEvent
   . propagatePlaceEvent placeEvent
   . ensurePlaceExists url' title' $ state
   where
-      eventMsg = event^.eventDataEventMsg
-      time = event^.eventDataTime
-      userUUid = event^.eventDataUserUUid
-      title' = eventMsg^.eventMsgTitle
-      url' = eventMsg^.eventMsgUrl
       placeUUid = getUUid url'
       previousPlace = lastVisited userUUid state
       placeEvent = PlaceEvent time userUUid placeUUid previousPlace
@@ -47,23 +45,29 @@ lastVisited userUUid state = lastPlace' <$> state^?stateUsers.at userUUid._Just.
     lastPlace' placeUUid = state^?!statePlaceEvents.at placeUUid._Just.placeEventTo
 
 findOtherInterestedPlaces :: UUid URL -> (State, FrontendReplies) -> (State, FrontendReplies)
-findOtherInterestedPlaces uuid (state, xs@(_, re):_) = (state, (readyReplyForPlace re state uuid):xs:[])
+findOtherInterestedPlaces uuid (state, xs@(_, res):_) = (state, (readyReplyForPlace res state uuid):xs:[])
+findOtherInterestedPlaces _ fr = fr
 
 readyReplyForPlace :: FrontendReply -> State -> UUid URL -> (ConnectedUsers, FrontendReply)
-readyReplyForPlace (FrontendReply a f r wn wh) state uuid = (users, FrontendReply a f req wn wh)
+readyReplyForPlace (PageEventReply a b) state uuid = (users, PageEventReply a b)
   where
     place = state^?!statePlaces.at uuid._Just
     users = place^.placeUsers
     req = placeFrontendMsg place
 
+readyReplyForPlace (CanonicalUrlReply a b) state uuid = (users, CanonicalUrlReply a b)
+  where
+    place = state^?!statePlaces.at uuid._Just
+    users = place^.placeUsers
+
 readyReply :: PlaceEvent -> State -> (State, FrontendReplies)
 readyReply (PlaceEvent time' userUUid' placeUUid' previousPlace') state = (state, [(users, frontendReply)])
   where
     users = state^?!statePlaces.at placeUUid'._Just.placeUsers
-    (Name name) = state^?!stateUsers.at userUUid'._Just.userName
+    name = state^?!stateUsers.at userUUid'._Just.userName
     at' = placeFrontendMsg $ state^?!statePlaces. at placeUUid'._Just
     from' = fmap (placeFrontendMsg . (\u -> state^?!statePlaces. at u._Just)) previousPlace'
-    frontendReply = FrontendReply at' from' at' (T.pack $ show time') (T.decodeUtf8 name)
+    frontendReply = replyPageEvent (PageEventPayload at' from' at' (T.pack $ show time') name)
 
 propagatePlaceEvent :: PlaceEvent -> State -> State
 propagatePlaceEvent placeEvent =
