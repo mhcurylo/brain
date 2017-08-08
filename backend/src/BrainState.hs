@@ -6,7 +6,6 @@ import BrainMsg hiding (at)
 import qualified Data.Map            as M
 import qualified Data.Set            as S
 import qualified Data.Text           as T
-import qualified Data.Text.Encoding  as T
 import qualified Data.Time.Clock     as TC
 import Control.Lens.At               as L
 import Control.Lens

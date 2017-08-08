@@ -4,13 +4,15 @@ module BrainStateSpec (main, spec) where
 
 import ArbitraryInstances()
 import BrainState
-import BrainData hiding (at)
+import BrainData
+import BrainMsg  hiding (at)
 import Test.Hspec
 import Test.QuickCheck
 import qualified Data.Map            as M
 import qualified Data.Set            as S
 import qualified Data.Text           as T
 import qualified Data.Text.Encoding  as T
+import qualified Data.Time.Clock     as TC
 import Control.Lens
 import Data.Maybe
 
@@ -36,55 +38,41 @@ prop_removesUserFromState uuid name state = not $ isNameInUse name newState
   where
     newState = removeUserFromState uuid name $ addUserToState uuid name state
 
-prop_addsPlaceToState :: Name ->  EventData -> State -> Bool
-prop_addsPlaceToState name event state = isJust $ newState^.(statePlaces . at uuid)
+prop_addsPlaceToState :: Name -> FrontendMsg -> UUid User -> TC.UTCTime -> State -> Bool
+prop_addsPlaceToState name msg userUUid time state = isJust $ newState^.(statePlaces . at placeUUid)
   where
-    (newState, _) = addEventToState event . addUserToState (event^.eventDataUserUUid) name $ state
-    uuid = getUUid $ event^.(eventDataEventMsg.eventMsgUrl)
+    (newState, _) = addEventToState msg userUUid time . addUserToState userUUid name $ state
+    placeUUid = getUUid $ msg^.url
 
-prop_addsPlacEventToState :: Name -> EventData -> State -> Bool
-prop_addsPlacEventToState name event state = isJust (newState^.(statePlaceEvents . at uuid))
+prop_addsPlacEventToState :: Name ->FrontendMsg -> UUid User -> TC.UTCTime -> State -> Bool
+prop_addsPlacEventToState name msg userUUid time state = isJust (newState^.(statePlaceEvents . at uuid))
                                          &&  isJust (newState^?(stateUsers . at userUUid)._Just.userHistory.ix 0)
                                         && isJust (newState^?(statePlaces . at placeUUid)._Just.placeHistory.ix 0)
   where
-    (newState, _) = addEventToState event . addUserToState (event^.eventDataUserUUid) name $ state
-    time = event^.eventDataTime
-    userUUid = event^.eventDataUserUUid
-    url' = event^.eventDataEventMsg^.eventMsgUrl
+    (newState, _) = addEventToState msg userUUid time . addUserToState userUUid name $ state
+    url' = msg^.url
     placeUUid = getUUid url'
     uuid = getUUid $ PlaceEvent time userUUid placeUUid Nothing
 
-prop_addsUserToMostRecentEvent :: Name -> EventData -> EventData -> State -> Bool
-prop_addsUserToMostRecentEvent name event event' state = userAtPlace placeUUid' && not (userAtPlace placeUUid)
+prop_addsUserToMostRecentEvent :: Name -> FrontendMsg -> FrontendMsg -> UUid User -> TC.UTCTime -> State -> Bool
+prop_addsUserToMostRecentEvent name msg msg' userUUid time state = userAtPlace placeUUid' && not (userAtPlace placeUUid)
   where
-    (newState, _) = addEventToState (event' & eventDataUserUUid .~ userUUid) . fst . addEventToState event . addUserToState userUUid name $ state
-    userUUid = event^.eventDataUserUUid
-    placeUUid = getUUid $ event^.eventDataEventMsg^.eventMsgUrl
-    placeUUid' = getUUid $ event'^.eventDataEventMsg^.eventMsgUrl
+    (newState, _) = addEventToState msg' userUUid time . fst . addEventToState msg userUUid time . addUserToState userUUid name $ state
+    placeUUid = getUUid $ msg^.url
+    placeUUid' = getUUid $ msg'^.url
     userAtPlace uuid = fromMaybe False $ newState^?(statePlaces . at uuid)._Just.placeUsers.contains userUUid
 
-prop_returnsProperUserLists :: Name -> Name -> EventData -> EventData -> State -> Bool
-prop_returnsProperUserLists name name' event event' state = users == S.fromList [userUUid', userUUid]
+prop_returnsProperUserLists :: Name -> Name -> FrontendMsg -> FrontendMsg -> UUid User -> UUid User -> TC.UTCTime -> State -> Bool
+prop_returnsProperUserLists name name' msg msg' userUUid userUUid' time state = users == S.fromList [userUUid', userUUid]
   where
-    (_, (users, _):_) = addEventToState event' . fst . addEventToState (event' & eventDataUserUUid .~ userUUid) . fst . addEventToState event . addUserToState userUUid name . addUserToState userUUid' name' $ state
-    userUUid = event^.eventDataUserUUid
-    userUUid' = event'^.eventDataUserUUid
+    (_, (users, _):_) = addEventToState msg userUUid' time . fst . addEventToState msg userUUid time  . fst . addEventToState msg' userUUid time . addUserToState userUUid name . addUserToState userUUid' name' $ state
 
-prop_returnsProperFrontendReplies :: Name -> EventData -> EventData -> State -> Bool
-prop_returnsProperFrontendReplies name event event' state = replyAt == replyAt' && replyFrom == replyFrom'
+prop_returnsProperFrontendReplies :: Name ->  FrontendMsg -> FrontendMsg -> UUid User -> TC.UTCTime -> State -> Bool
+prop_returnsProperFrontendReplies name msg msg' userUUid time state = replyAt == replyAt' && replyFrom == replyFrom'
   where
-    (_, (_, replyFrom):(_, replyAt):_) = addEventToState (event' & eventDataUserUUid .~ userUUid) . fst . addEventToState event . addUserToState userUUid name $ state
-    userUUid = event^.eventDataUserUUid
-    fmsg = eventToFrontend event
-    fmsg' = eventToFrontend event'
-    (Name name'') = name
-    time' = T.pack . show $ event'^.eventDataTime
-    name' = T.decodeUtf8 name''
-    replyAt' = FrontendReply fmsg' (Just fmsg) fmsg' time' name'
-    replyFrom' = FrontendReply fmsg' (Just fmsg) fmsg time' name'
-
-eventToFrontend :: EventData -> FrontendMsg
-eventToFrontend (EventData _ (EventMsg (URL u) (Title t)) _) = FrontendMsg (T.decodeUtf8 u) t
+    (_, (_, replyFrom):(_, replyAt):_) = addEventToState msg' userUUid time . fst . addEventToState msg userUUid time . addUserToState userUUid name $ state
+    replyAt' = replyPageEvent $ PageEventPayload msg' (Just msg) msg' time name
+    replyFrom' = replyPageEvent $ PageEventPayload msg' (Just msg) msg time name
 
 spec = do
   describe "isNameInUse" $ do

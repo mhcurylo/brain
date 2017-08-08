@@ -5,9 +5,9 @@
 
 module BrainMsg where
 
-import qualified Data.Text           as T
 import qualified Data.Aeson          as A
 import qualified Data.Aeson.TH       as A
+import qualified Data.Time.Clock     as TC
 import Control.Lens hiding (at)
 import BrainData
 
@@ -28,7 +28,7 @@ data PageEventPayload = PageEventPayload {
     _at :: FrontendMsg
   , _from :: Maybe FrontendMsg
   , _req :: FrontendMsg
-  , _when :: T.Text
+  , _when :: TC.UTCTime
   , _who :: Name
 } deriving (Show, Eq, Ord);
 makeLenses ''PageEventPayload

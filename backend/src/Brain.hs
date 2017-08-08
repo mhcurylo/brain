@@ -9,11 +9,12 @@ import BrainMsg
 import BrainState
 import NameGen
 import BrainComms
-import CommsParser (parseEventMsg)
+import CommsParser 
 import qualified Data.Aeson                     as A
 import qualified Data.ByteString                as B
-import qualified Data.ByteString.Char8          as BChar
 import qualified Data.Map                       as M
+import qualified Data.Text                      as T
+import qualified Data.Text.IO                   as T
 import qualified Network.HTTP.Types             as Http
 import qualified Network.Wai                    as Wai
 import qualified Network.Wai.Handler.Warp       as Warp
@@ -23,8 +24,9 @@ import qualified Data.UUID.V4                   as U4
 import qualified Data.Time.Clock                as TC
 import Data.Maybe (isJust, fromJust)
 import Control.Exception (finally)
-import Control.Monad (forever, forM_)
+import Control.Monad (forever, forM_, join)
 import Control.Concurrent (newMVar, modifyMVar, modifyMVar_, readMVar)
+import Control.Lens ((^.))
 
 runBrain :: Int -> IO ()
 runBrain port = do
@@ -55,12 +57,13 @@ handshake conn mstate mcomms = do
 connection :: UUid User -> WS.Connection -> MState -> MComms -> IO ()
 connection uuid conn mstate mcomms = forever $ do
   time <- TC.getCurrentTime
-  msg <- parseEventMsg <$> WS.receiveData conn
-  if isJust msg'
-    then communicateEvent mstate mcomms msg uuid time
-    else print $ "Error in parsing " ++ show msg
+  msg <- parseFrontendMsg <$> WS.receiveData conn
+  let msg' = normalizeFrontendMsg =<< msg
+  case msg' of
+    (Just m) -> communicateEvent mstate mcomms m uuid time
+    (Nothing) -> print $ "Error in parsing " ++ show msg
 
-communicateEvent :: MState -> MComms -> FrontendMsg -> UUid User -> TC.Time -> IO ()
+communicateEvent :: MState -> MComms -> FrontendMsg -> UUid User -> TC.UTCTime -> IO ()
 communicateEvent mstate mcomms msg uuid time = do
   frontendReplies <- addEventToMState mstate msg uuid time
   forM_ frontendReplies (sendReplies mcomms)
@@ -72,7 +75,7 @@ sendReplies mcomms (users, reply) = do
   let usersWS = M.elems $ M.intersection comms (M.fromSet id users)
   forM_ usersWS (`WS.sendTextData` repJSON)
 
-addEventToMState :: MState -> FrontendMsg -> UUid User -> TC.Time -> IO FrontendReplies
+addEventToMState :: MState -> FrontendMsg -> UUid User -> TC.UTCTime -> IO FrontendReplies
 addEventToMState mstate event uuid time = modifyMVar mstate $ return . addEventToState event uuid time
 
 addUserToMState :: WS.Connection -> MState -> MComms -> IO (Name, UUid User)
@@ -83,8 +86,7 @@ addUserToMState conn mstate mcomms = do
     then addUserToMState conn mstate mcomms
     else do
       uuid <- UUid <$> U4.nextRandom
-      let pname = (\(Name n) -> n) name
-      BChar.putStrLn pname
+      T.putStrLn $ name^.nAME
       modifyMVar_ mstate $ return . addUserToState uuid name
       modifyMVar_ mcomms $ return . addUserToComms uuid conn
       return (name, uuid)
