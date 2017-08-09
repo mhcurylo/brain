@@ -52,7 +52,7 @@ readyReplyForPlace (PageEventReply a b) state uuid = (users, PageEventReply a b)
   where
     place = state^?!statePlaces.at uuid._Just
     users = place^.placeUsers
-    req = placeFrontendMsg place
+    req' = placeFrontendMsg place
 
 readyReplyForPlace (CanonicalUrlReply a b) state uuid = (users, CanonicalUrlReply a b)
   where
@@ -66,7 +66,7 @@ readyReply (PlaceEvent time' userUUid' placeUUid' previousPlace') state = (state
     name = state^?!stateUsers.at userUUid'._Just.userName
     at' = placeFrontendMsg $ state^?!statePlaces. at placeUUid'._Just
     from' = fmap (placeFrontendMsg . (\u -> state^?!statePlaces. at u._Just)) previousPlace'
-    frontendReply = replyPageEvent (PageEventPayload at' from' at' (T.pack $ show time') name)
+    frontendReply = replyPageEvent (PageEventPayload at' from' at' time' name)
 
 propagatePlaceEvent :: PlaceEvent -> State -> State
 propagatePlaceEvent placeEvent =

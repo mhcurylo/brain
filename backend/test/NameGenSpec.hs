@@ -1,11 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module NameGenSpec (main, spec) where
-import qualified Data.ByteString.Char8   as Ch
+import qualified Data.Text   as T
 
 import ArbitraryInstances()
 import BrainData
 import NameGen
+import Control.Lens
 import Test.Hspec
 import Test.QuickCheck
 import Test.QuickCheck.Monadic
@@ -16,7 +17,7 @@ main = hspec spec
 prop_runName_returns2words :: Property
 prop_runName_returns2words = monadicIO $ do
    name <- run runName
-   assert ((length . Ch.words $ (\(Name n) -> n) name) == 2)
+   assert $ (length . T.words $ name^.nAME) >= 2
 
 spec :: Spec
 spec = do

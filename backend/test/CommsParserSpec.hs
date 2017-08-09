@@ -3,14 +3,15 @@
 module CommsParserSpec (main, spec) where
 
 import ArbitraryInstances
-import BrainData
+import BrainMsg
 import Test.Hspec
 import Test.QuickCheck
 import CommsParser
 
-prop_parsesFrontendMsgToCannonical :: FrontendMsgTest -> Bool
-prop_parsesFrontendMsgToCannonical (FrontendMsgTest msg curl titl) = case parseEventMsg msg of
-  Just (EventMsg url' title') -> curl == url' && titl == title'
+prop_processNormalizesFrontendMsgToCannonical :: FrontendMsgTest -> Bool
+prop_processNormalizesFrontendMsgToCannonical (FrontendMsgTest msg curl titl) = case processFrontendMsg msg of
+  Just (FrontendMsg url' title', CanonicalUrlReply _ (CanonicalUrlPayload _ cann)) -> url' == curl && cann == curl && titl == title'
+  Just _ -> False
   Nothing -> False
 
 main :: IO ()
@@ -18,4 +19,4 @@ main = hspec spec
 
 spec :: Spec
 spec = describe "CommsParser" $
-    it "should parse the message" $ property prop_parsesFrontendMsgToCannonical
+    it "should parse the message" $ property prop_processNormalizesFrontendMsgToCannonical

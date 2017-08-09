@@ -29,3 +29,10 @@ normalizeFrontendMsg msg = case normalizeTextURI $ msg^.url.uRL of
 
 parseFrontendMsg :: B.ByteString -> Maybe FrontendMsg
 parseFrontendMsg = A.decodeStrict
+
+processFrontendMsg :: B.ByteString -> Maybe (FrontendMsg, FrontendReply)
+processFrontendMsg msg = case parseFrontendMsg msg of
+    Just m -> case normalizeFrontendMsg m of
+      Just m' -> Just (m', replyCanonicalUrl  (CanonicalUrlPayload (m^.url) (m'^.url)))
+      Nothing -> Nothing
+    Nothing -> Nothing

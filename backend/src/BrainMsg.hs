@@ -52,6 +52,9 @@ data FrontendReply = PageEventReply {
 replyPageEvent :: PageEventPayload -> FrontendReply
 replyPageEvent = PageEventReply PAGE_EVENT_ACTION
 
+replyCanonicalUrl :: CanonicalUrlPayload -> FrontendReply
+replyCanonicalUrl = CanonicalUrlReply CANONICAL_URL_ACTION
+
 makeLenses ''FrontendReply
 A.deriveJSON A.defaultOptions{A.fieldLabelModifier = drop 3, A.sumEncoding = A.UntaggedValue} ''FrontendReply
 
