@@ -38,11 +38,11 @@ prop_removesUserFromState uuid name state = not $ isNameInUse name newState
   where
     newState = removeUserFromState uuid name $ addUserToState uuid name state
 
-prop_addsPlaceToState :: Name -> FrontendMsg -> UUid User -> TC.UTCTime -> State -> Bool
-prop_addsPlaceToState name msg userUUid time state = isJust $ newState^.(statePlaces . at placeUUid)
+prop_ensuresPlaceExists :: FrontendMsg -> State -> Bool
+prop_ensuresPlaceExists (FrontendMsg url' title') state = isJust $ newState^.(statePlaces . at placeUUid)
   where
-    (newState, _) = addEventToState msg userUUid time . addUserToState userUUid name $ state
-    placeUUid = getUUid $ msg^.url
+    newState = ensurePlaceExists url' title' state
+    placeUUid = getUUid url'
 
 prop_addsPlacEventToState :: Name ->FrontendMsg -> UUid User -> TC.UTCTime -> State -> Bool
 prop_addsPlacEventToState name msg userUUid time state = isJust (newState^.(statePlaceEvents . at uuid))
@@ -83,7 +83,7 @@ spec = do
   describe "removeUserFromState" $
     it "should remove added user from state" $ property prop_removesUserFromState
   describe "addEventToState" $ do
-    it "should create a place if place is not there" $ property prop_addsPlaceToState
+    it "ensurePlaceExists should create a place if place is not there" $ property prop_ensuresPlaceExists
     it "should add PlaceEvent to state" $ property prop_addsPlacEventToState
     it "should clean the user from old place"  $ property prop_addsUserToMostRecentEvent
     it "should return users-at-place"  $ property prop_returnsProperUserLists
