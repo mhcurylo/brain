@@ -44,22 +44,31 @@ prop_ensuresPlaceExists (FrontendMsg url' title') state = isJust $ newState^.(st
     newState = ensurePlaceExists url' title' state
     placeUUid = getUUid url'
 
-prop_addsPlacEventToState :: Name ->FrontendMsg -> UUid User -> TC.UTCTime -> State -> Bool
-prop_addsPlacEventToState name msg userUUid time state = isJust (newState^.(statePlaceEvents . at uuid))
+
+prop_propagatesPlaceEvent :: Name -> FrontendMsg -> UUid User -> TC.UTCTime -> State -> Bool
+prop_propagatesPlaceEvent name msg userUUid time state = isJust (newState^?(statePlaceEvents . at uuid))
                                          &&  isJust (newState^?(stateUsers . at userUUid)._Just.userHistory.ix 0)
                                         && isJust (newState^?(statePlaces . at placeUUid)._Just.placeHistory.ix 0)
   where
-    (newState, _) = addEventToState msg userUUid time . addUserToState userUUid name $ state
+    newState = propagatePlaceEvent placeEvent . ensurePlaceExists url' title' . addUserToState userUUid name $ state
     url' = msg^.url
+    title' = msg^.title
     placeUUid = getUUid url'
-    uuid = getUUid $ PlaceEvent time userUUid placeUUid Nothing
+    placeEvent = PlaceEvent time userUUid placeUUid Nothing
+    uuid = getUUid placeEvent
 
 prop_addsUserToMostRecentEvent :: Name -> FrontendMsg -> FrontendMsg -> UUid User -> TC.UTCTime -> State -> Bool
 prop_addsUserToMostRecentEvent name msg msg' userUUid time state = userAtPlace placeUUid' && not (userAtPlace placeUUid)
   where
-    (newState, _) = addEventToState msg' userUUid time . fst . addEventToState msg userUUid time . addUserToState userUUid name $ state
-    placeUUid = getUUid $ msg^.url
-    placeUUid' = getUUid $ msg'^.url
+    url' = msg^.url
+    title' = msg^.title
+    url'' = msg'^.url
+    title'' = msg'^.title
+    newState = propagatePlaceEvent placeEvent' . propagatePlaceEvent placeEvent .  ensurePlaceExists url'' title'' . ensurePlaceExists url' title' . addUserToState userUUid name $ state
+    placeEvent = PlaceEvent time userUUid placeUUid Nothing
+    placeEvent' = PlaceEvent time userUUid placeUUid' (Just placeUUid)
+    placeUUid = getUUid url'
+    placeUUid' = getUUid url''
     userAtPlace uuid = fromMaybe False $ newState^?(statePlaces . at uuid)._Just.placeUsers.contains userUUid
 
 prop_returnsProperUserLists :: Name -> Name -> FrontendMsg -> FrontendMsg -> UUid User -> UUid User -> TC.UTCTime -> State -> Bool
@@ -84,7 +93,7 @@ spec = do
     it "should remove added user from state" $ property prop_removesUserFromState
   describe "addEventToState" $ do
     it "ensurePlaceExists should create a place if place is not there" $ property prop_ensuresPlaceExists
-    it "should add PlaceEvent to state" $ property prop_addsPlacEventToState
-    it "should clean the user from old place"  $ property prop_addsUserToMostRecentEvent
+    it "propagatePlaceEvent should add PlaceEvent to state" $ property prop_propagatesPlaceEvent
+    it "propagatePlaceEvent should clean the user from old place"  $ property prop_addsUserToMostRecentEvent
     it "should return users-at-place"  $ property prop_returnsProperUserLists
     it "should return the frontendReply"  $ property prop_returnsProperFrontendReplies
