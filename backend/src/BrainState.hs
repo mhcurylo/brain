@@ -31,8 +31,8 @@ addUserToState uuid name = (stateNamesInUse . contains name .~ True) . freshUser
 
 addEventToState :: FrontendMsg -> UUid User -> TC.UTCTime -> State -> (State, FrontendReplies)
 addEventToState (FrontendMsg url' title') userUUid time state =
--- maybe id findOtherInterestedPlaces previousPlace .
-   readyReply placeEvent
+  maybe id findOtherInterestedPlaces previousPlace
+  . readyReply placeEvent
   . propagatePlaceEvent placeEvent
   . ensurePlaceExists url' title'$ state
   where
@@ -46,20 +46,16 @@ lastVisited userUUid state = lastPlace' <$> state^?stateUsers.at userUUid._Just.
     lastPlace' placeUUid = state^?!statePlaceEvents.at placeUUid._Just.placeEventTo
 
 findOtherInterestedPlaces :: UUid URL -> (State, FrontendReplies) -> (State, FrontendReplies)
-findOtherInterestedPlaces uuid (state, xs@(_, res):_) = (state, (readyReplyForPlace res state uuid):xs:[])
+findOtherInterestedPlaces uuid (state, xs@(_, res):_) = (state, [readyReplyForPlace res state uuid, xs])
 findOtherInterestedPlaces _ fr = fr
 
 readyReplyForPlace :: FrontendReply -> State -> UUid URL -> (ConnectedUsers, FrontendReply)
-readyReplyForPlace (PageEventReply a b) state uuid = (users, PageEventReply a b)
+readyReplyForPlace reply state uuid = (users, reply')
   where
     place = state^?!statePlaces.at uuid._Just
     users = place^.placeUsers
     req' = placeFrontendMsg place
-
-readyReplyForPlace (CanonicalUrlReply a b) state uuid = (users, CanonicalUrlReply a b)
-  where
-    place = state^?!statePlaces.at uuid._Just
-    users = place^.placeUsers
+    reply' = reply & pePayload . req .~ req'
 
 readyReply :: PlaceEvent -> State -> (State, FrontendReplies)
 readyReply (PlaceEvent time' userUUid' placeUUid' previousPlace') state = (state, [(users, frontendReply)])

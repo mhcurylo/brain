@@ -42,11 +42,11 @@ makeLenses ''CanonicalUrlPayload
 A.deriveJSON A.defaultOptions{A.fieldLabelModifier = drop 1, A.sumEncoding = A.UntaggedValue} ''CanonicalUrlPayload
 
 data FrontendReply = PageEventReply {
-    _PEkind :: PAGE_EVENT_ACTION
-  , _PEpayload :: PageEventPayload
+    _peKind :: PAGE_EVENT_ACTION
+  , _pePayload :: PageEventPayload
 } | CanonicalUrlReply {
-    _CAkind :: CANONICAL_URL_ACTION
-  , _CApayload :: CanonicalUrlPayload
+    _caKind :: CANONICAL_URL_ACTION
+  , _caPayload :: CanonicalUrlPayload
 }  deriving (Show, Eq, Ord)
 
 replyPageEvent :: FrontendMsg -> Maybe FrontendMsg -> FrontendMsg -> TC.UTCTime -> Name -> FrontendReply

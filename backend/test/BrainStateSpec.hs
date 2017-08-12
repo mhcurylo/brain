@@ -15,6 +15,7 @@ import qualified Data.Text.Encoding  as T
 import qualified Data.Time.Clock     as TC
 import Control.Lens
 import Data.Maybe
+import Debug.Trace
 
 main :: IO ()
 main = hspec spec
@@ -72,7 +73,7 @@ prop_addsUserToMostRecentEvent name msg msg' userUUid time state = userAtPlace p
     userAtPlace uuid = fromMaybe False $ newState^?(statePlaces . at uuid)._Just.placeUsers.contains userUUid
 
 prop_returnsProperUserLists :: Name -> Name -> FrontendMsg -> FrontendMsg -> UUid User -> UUid User -> TC.UTCTime -> State -> Bool
-prop_returnsProperUserLists name name' msg msg' userUUid userUUid' time state = users == S.fromList [userUUid', userUUid]
+prop_returnsProperUserLists name name' msg msg' userUUid userUUid' time state = userUUid' == userUUid || users == S.fromList [userUUid', userUUid]
   where
     (_, (users, _):_) = addEventToState msg userUUid' time . fst . addEventToState msg userUUid time  . fst . addEventToState msg' userUUid time . addUserToState userUUid name . addUserToState userUUid' name' $ state
 
