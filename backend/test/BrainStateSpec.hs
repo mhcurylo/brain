@@ -80,8 +80,8 @@ prop_returnsProperFrontendReplies :: Name ->  FrontendMsg -> FrontendMsg -> UUid
 prop_returnsProperFrontendReplies name msg msg' userUUid time state = replyAt == replyAt' && replyFrom == replyFrom'
   where
     (_, (_, replyFrom):(_, replyAt):_) = addEventToState msg' userUUid time . fst . addEventToState msg userUUid time . addUserToState userUUid name $ state
-    replyAt' = replyPageEvent $ PageEventPayload msg' (Just msg) msg' time name
-    replyFrom' = replyPageEvent $ PageEventPayload msg' (Just msg) msg time name
+    replyAt' = replyPageEvent msg' (Just msg) msg' time name
+    replyFrom' = replyPageEvent msg' (Just msg) msg time name
 
 spec = do
   describe "isNameInUse" $ do
@@ -94,6 +94,6 @@ spec = do
   describe "addEventToState" $ do
     it "ensurePlaceExists should create a place if place is not there" $ property prop_ensuresPlaceExists
     it "propagatePlaceEvent should add PlaceEvent to state" $ property prop_propagatesPlaceEvent
-    it "propagatePlaceEvent should clean the user from old place"  $ property prop_addsUserToMostRecentEvent
+    it "propagatePlaceEvent should clean the user from old place and add to the new place"  $ property prop_addsUserToMostRecentEvent
     it "should return users-at-place"  $ property prop_returnsProperUserLists
     it "should return the frontendReply"  $ property prop_returnsProperFrontendReplies

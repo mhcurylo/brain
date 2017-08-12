@@ -49,11 +49,11 @@ data FrontendReply = PageEventReply {
   , _CApayload :: CanonicalUrlPayload
 }  deriving (Show, Eq, Ord)
 
-replyPageEvent :: PageEventPayload -> FrontendReply
-replyPageEvent = PageEventReply PAGE_EVENT_ACTION
+replyPageEvent :: FrontendMsg -> Maybe FrontendMsg -> FrontendMsg -> TC.UTCTime -> Name -> FrontendReply
+replyPageEvent a f r we wo = PageEventReply PAGE_EVENT_ACTION $ PageEventPayload a f r we wo
 
-replyCanonicalUrl :: CanonicalUrlPayload -> FrontendReply
-replyCanonicalUrl = CanonicalUrlReply CANONICAL_URL_ACTION
+replyCanonicalUrl :: URL -> URL -> FrontendReply
+replyCanonicalUrl org can = CanonicalUrlReply CANONICAL_URL_ACTION $ CanonicalUrlPayload org can
 
 makeLenses ''FrontendReply
 A.deriveJSON A.defaultOptions{A.fieldLabelModifier = drop 3, A.sumEncoding = A.UntaggedValue} ''FrontendReply

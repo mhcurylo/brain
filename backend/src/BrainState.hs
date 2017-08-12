@@ -9,6 +9,7 @@ import qualified Data.Text           as T
 import qualified Data.Time.Clock     as TC
 import Control.Lens.At               as L
 import Control.Lens
+import Debug.Trace
 
 initState :: State
 initState = State S.empty M.empty M.empty M.empty
@@ -29,10 +30,11 @@ addUserToState :: UUid User -> Name -> State -> State
 addUserToState uuid name = (stateNamesInUse . contains name .~ True) . freshUser uuid name
 
 addEventToState :: FrontendMsg -> UUid User -> TC.UTCTime -> State -> (State, FrontendReplies)
-addEventToState (FrontendMsg url' title') userUUid time state = maybe id findOtherInterestedPlaces previousPlace
-  . readyReply placeEvent
+addEventToState (FrontendMsg url' title') userUUid time state =
+-- maybe id findOtherInterestedPlaces previousPlace .
+   readyReply placeEvent
   . propagatePlaceEvent placeEvent
-  . ensurePlaceExists url' title' $ state
+  . ensurePlaceExists url' title'$ state
   where
       placeUUid = getUUid url'
       previousPlace = lastVisited userUUid state
@@ -66,7 +68,7 @@ readyReply (PlaceEvent time' userUUid' placeUUid' previousPlace') state = (state
     name = state^?!stateUsers.at userUUid'._Just.userName
     at' = placeFrontendMsg $ state^?!statePlaces. at placeUUid'._Just
     from' = fmap (placeFrontendMsg . (\u -> state^?!statePlaces. at u._Just)) previousPlace'
-    frontendReply = replyPageEvent (PageEventPayload at' from' at' time' name)
+    frontendReply = replyPageEvent at' from' at' time' name
 
 propagatePlaceEvent :: PlaceEvent -> State -> State
 propagatePlaceEvent placeEvent =

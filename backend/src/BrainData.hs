@@ -21,7 +21,7 @@ import Control.Lens hiding (at)
 import Control.Concurrent (MVar)
 
 namespacePE :: U.UUID
-namespacePE = fromJust . U.fromText $ T.pack "66961c15-6ead-11e7-8001-7446-a0bb45b3"
+namespacePE = fromJust . U.fromText $ T.pack "40e693f3-62b7-4845-8a8d-4951ab7d3a93"
 
 unpackText :: T.Text -> [W.Word8]
 unpackText = B.unpack . T.encodeUtf8
