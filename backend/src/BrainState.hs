@@ -6,8 +6,8 @@ import BrainMsg hiding (at)
 import qualified Data.Map            as M
 import qualified Data.Set            as S
 import qualified Data.Text           as T
-import qualified Data.Time.Clock     as TC
 import Control.Lens.At               as L
+import Data.Time.Clock.POSIX
 import Control.Lens
 import Debug.Trace
 
@@ -29,7 +29,7 @@ removeUserFromState uuid name = (stateNamesInUse . contains name).~False
 addUserToState :: UUid User -> Name -> State -> State
 addUserToState uuid name = (stateNamesInUse . contains name .~ True) . freshUser uuid name
 
-addEventToState :: FrontendMsg -> UUid User -> TC.UTCTime -> State -> (State, FrontendReplies)
+addEventToState :: FrontendMsg -> UUid User -> POSIXTime -> State -> (State, FrontendReplies)
 addEventToState (FrontendMsg url' title') userUUid time state =
   maybe id findOtherInterestedPlaces previousPlace
   . readyReply placeEvent

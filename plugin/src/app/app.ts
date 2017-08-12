@@ -11,7 +11,7 @@ export const next: ((action: ActionEvent) => void) = (() => {
     let store: ActionStore<State> = createStore({
         reducers: [liftReducer(pagesReducer)],
         state: initState,
-        subscriptions: [broadcast, updateBadge],
+        subscriptions: [broadcast, updateBadge, console.log],
     });
 
     return (action: ActionEvent): void => { store = store(action) };

@@ -13,9 +13,9 @@ import qualified Data.ByteString     as B
 import qualified Data.Set            as S
 import qualified Network.WebSockets  as WS
 import qualified Data.UUID           as U
-import qualified Data.Time.Clock     as TC
 import qualified Data.UUID.V5        as U5
 import qualified Data.Word           as W
+import Data.Time.Clock.POSIX
 import Data.Maybe (fromJust)
 import Control.Lens hiding (at)
 import Control.Concurrent (MVar)
@@ -44,7 +44,7 @@ data User = User {
 } deriving (Show, Eq, Ord)
 
 data PlaceEvent = PlaceEvent {
-    _placeEventWhen  :: TC.UTCTime
+    _placeEventWhen  :: POSIXTime
   , _placeEventWho :: UUid User
   , _placeEventTo :: UUid URL
   , _placeEventFrom :: Maybe (UUid URL)

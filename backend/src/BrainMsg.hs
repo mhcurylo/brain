@@ -5,10 +5,11 @@
 
 module BrainMsg where
 
-import qualified Data.Aeson          as A
-import qualified Data.Aeson.TH       as A
-import qualified Data.Time.Clock     as TC
+import qualified Data.Aeson            as A
+import qualified Data.Aeson.TH         as A
+import Data.Time.Clock.POSIX
 import Control.Lens hiding (at)
+import Data.Char (toLower)
 import BrainData
 
 data FrontendMsg = FrontendMsg {
@@ -19,17 +20,17 @@ makeLenses ''FrontendMsg
 A.deriveJSON A.defaultOptions{A.fieldLabelModifier = drop 1} ''FrontendMsg
 
 data PAGE_EVENT_ACTION = PAGE_EVENT_ACTION deriving (Show, Eq, Ord);
-A.deriveJSON A.defaultOptions ''PAGE_EVENT_ACTION
+A.deriveJSON A.defaultOptions{A.sumEncoding = A.UntaggedValue} ''PAGE_EVENT_ACTION
 
 data CANONICAL_URL_ACTION = CANONICAL_URL_ACTION deriving (Show, Eq, Ord);
-A.deriveJSON A.defaultOptions ''CANONICAL_URL_ACTION
+A.deriveJSON A.defaultOptions{A.sumEncoding = A.UntaggedValue} ''CANONICAL_URL_ACTION
 
 data PageEventPayload = PageEventPayload {
-    _at :: FrontendMsg
+    _at   :: FrontendMsg
   , _from :: Maybe FrontendMsg
-  , _req :: FrontendMsg
-  , _when :: TC.UTCTime
-  , _who :: Name
+  , _req  :: FrontendMsg
+  , _when :: POSIXTime
+  , _who  :: Name
 } deriving (Show, Eq, Ord);
 makeLenses ''PageEventPayload
 A.deriveJSON A.defaultOptions{A.fieldLabelModifier = drop 1, A.sumEncoding = A.UntaggedValue} ''PageEventPayload
@@ -49,14 +50,15 @@ data FrontendReply = PageEventReply {
   , _caPayload :: CanonicalUrlPayload
 }  deriving (Show, Eq, Ord)
 
-replyPageEvent :: FrontendMsg -> Maybe FrontendMsg -> FrontendMsg -> TC.UTCTime -> Name -> FrontendReply
+makeLenses ''FrontendReply
+A.deriveJSON A.defaultOptions{A.fieldLabelModifier = map toLower . drop 3, A.sumEncoding = A.UntaggedValue} ''FrontendReply
+
+replyPageEvent :: FrontendMsg -> Maybe FrontendMsg -> FrontendMsg -> POSIXTime-> Name -> FrontendReply
 replyPageEvent a f r we wo = PageEventReply PAGE_EVENT_ACTION $ PageEventPayload a f r we wo
 
 replyCanonicalUrl :: URL -> URL -> FrontendReply
 replyCanonicalUrl org can = CanonicalUrlReply CANONICAL_URL_ACTION $ CanonicalUrlPayload org can
 
-makeLenses ''FrontendReply
-A.deriveJSON A.defaultOptions{A.fieldLabelModifier = drop 3, A.sumEncoding = A.UntaggedValue} ''FrontendReply
 
 placeFrontendMsg :: Place -> FrontendMsg
 placeFrontendMsg (Place t u _ _) = FrontendMsg u t

@@ -13,6 +13,7 @@ import Data.Word (Word32)
 import qualified Data.Map            as M
 import qualified Data.Text           as T
 import qualified Data.Time           as TC
+import Data.Time.Clock.POSIX
 import qualified Data.Set            as S
 import qualified Data.UUID           as U
 import qualified Data.ByteString.Char8 as BChar
@@ -102,10 +103,10 @@ instance Arbitrary State where
     let places = M.empty
     return $ State namesInUse users placeEvents places
 
-instance Arbitrary TC.UTCTime where
+instance Arbitrary POSIXTime where
     arbitrary =
         do randomDay <- choose (1, 29) :: Gen Int
            randomMonth <- choose (1, 12) :: Gen Int
            randomYear <- choose (2005, 2017) :: Gen Integer
            randomTime <- choose (0, 86401) :: Gen Int
-           return $ TC.UTCTime (TC.fromGregorian randomYear randomMonth randomDay) (fromIntegral randomTime)
+           return $ utcTimeToPOSIXSeconds $ TC.UTCTime (TC.fromGregorian randomYear randomMonth randomDay) (fromIntegral randomTime)

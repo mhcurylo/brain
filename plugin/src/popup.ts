@@ -1,6 +1,6 @@
 import { fmap, Maybe } from './libs/maybe';
 import { emptyEvent, pageShownEvent } from './reducers/pages/actions/action.creators';
-import { Page, PageEvent, Place, State } from './state/state.interface';
+import { getCanonicalUrl, Page, PageEvent, Place, State } from './state/state.interface';
 import { redrawPopup } from './views/popup.view';
 
 let shouldRedraw: boolean = false;
@@ -11,9 +11,10 @@ const background: Maybe<Window> = chrome.extension.getBackgroundPage();
 
 const updateState = (newState: State): void => {
     const setState = fmap((url: string) => viewState = newState.pages[url]);
+    const canonicalUrl = getCanonicalUrl(newState);
 
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
-        const url: Maybe<string> = tabs[0].url;
+        const url: Maybe<string> = canonicalUrl(tabs[0].url);
         setState(url);
         shouldRedraw = true;
     });

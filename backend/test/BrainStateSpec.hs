@@ -10,12 +10,9 @@ import Test.Hspec
 import Test.QuickCheck
 import qualified Data.Map            as M
 import qualified Data.Set            as S
-import qualified Data.Text           as T
-import qualified Data.Text.Encoding  as T
-import qualified Data.Time.Clock     as TC
+import Data.Time.Clock.POSIX
 import Control.Lens
 import Data.Maybe
-import Debug.Trace
 
 main :: IO ()
 main = hspec spec
@@ -46,7 +43,7 @@ prop_ensuresPlaceExists (FrontendMsg url' title') state = isJust $ newState^.(st
     placeUUid = getUUid url'
 
 
-prop_propagatesPlaceEvent :: Name -> FrontendMsg -> UUid User -> TC.UTCTime -> State -> Bool
+prop_propagatesPlaceEvent :: Name -> FrontendMsg -> UUid User -> POSIXTime -> State -> Bool
 prop_propagatesPlaceEvent name msg userUUid time state = isJust (newState^?(statePlaceEvents . at uuid))
                                          &&  isJust (newState^?(stateUsers . at userUUid)._Just.userHistory.ix 0)
                                         && isJust (newState^?(statePlaces . at placeUUid)._Just.placeHistory.ix 0)
@@ -58,7 +55,7 @@ prop_propagatesPlaceEvent name msg userUUid time state = isJust (newState^?(stat
     placeEvent = PlaceEvent time userUUid placeUUid Nothing
     uuid = getUUid placeEvent
 
-prop_addsUserToMostRecentEvent :: Name -> FrontendMsg -> FrontendMsg -> UUid User -> TC.UTCTime -> State -> Bool
+prop_addsUserToMostRecentEvent :: Name -> FrontendMsg -> FrontendMsg -> UUid User -> POSIXTime -> State -> Bool
 prop_addsUserToMostRecentEvent name msg msg' userUUid time state = userAtPlace placeUUid' && not (userAtPlace placeUUid)
   where
     url' = msg^.url
@@ -72,12 +69,12 @@ prop_addsUserToMostRecentEvent name msg msg' userUUid time state = userAtPlace p
     placeUUid' = getUUid url''
     userAtPlace uuid = fromMaybe False $ newState^?(statePlaces . at uuid)._Just.placeUsers.contains userUUid
 
-prop_returnsProperUserLists :: Name -> Name -> FrontendMsg -> FrontendMsg -> UUid User -> UUid User -> TC.UTCTime -> State -> Bool
+prop_returnsProperUserLists :: Name -> Name -> FrontendMsg -> FrontendMsg -> UUid User -> UUid User -> POSIXTime -> State -> Bool
 prop_returnsProperUserLists name name' msg msg' userUUid userUUid' time state = userUUid' == userUUid || users == S.fromList [userUUid', userUUid]
   where
     (_, (users, _):_) = addEventToState msg userUUid' time . fst . addEventToState msg userUUid time  . fst . addEventToState msg' userUUid time . addUserToState userUUid name . addUserToState userUUid' name' $ state
 
-prop_returnsProperFrontendReplies :: Name ->  FrontendMsg -> FrontendMsg -> UUid User -> TC.UTCTime -> State -> Bool
+prop_returnsProperFrontendReplies :: Name ->  FrontendMsg -> FrontendMsg -> UUid User -> POSIXTime -> State -> Bool
 prop_returnsProperFrontendReplies name msg msg' userUUid time state = replyAt == replyAt' && replyFrom == replyFrom'
   where
     (_, (_, replyFrom):(_, replyAt):_) = addEventToState msg' userUUid time . fst . addEventToState msg userUUid time . addUserToState userUUid name $ state

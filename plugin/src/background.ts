@@ -11,7 +11,6 @@ import { ActionEvent } from './store/store.interface';
 
 const send = initSockets('ws://localhost:3000', (res: MessageEvent) => {
     const msg: ActionEvent = JSON.parse(res.data);
-    console.log(msg);
 
     if (!(typeof msg === 'string')) {next(msg)};
 });

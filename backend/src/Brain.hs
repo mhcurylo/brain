@@ -21,7 +21,7 @@ import qualified Network.Wai.Handler.Warp       as Warp
 import qualified Network.Wai.Handler.WebSockets as WS
 import qualified Network.WebSockets             as WS
 import qualified Data.UUID.V4                   as U4
-import qualified Data.Time.Clock                as TC
+import Data.Time.Clock.POSIX
 import Data.Maybe (isJust, fromJust)
 import Control.Exception (finally)
 import Control.Monad (forever, forM_, join)
@@ -56,14 +56,15 @@ handshake conn mstate mcomms = do
 
 connection :: UUid User -> WS.Connection -> MState -> MComms -> IO ()
 connection uuid conn mstate mcomms = forever $ do
-  time <- TC.getCurrentTime
-  msg <- parseFrontendMsg <$> WS.receiveData conn
-  let msg' = normalizeFrontendMsg =<< msg
-  case msg' of
-    (Just m) -> communicateEvent mstate mcomms m uuid time
-    (Nothing) -> print $ "Error in parsing " ++ show msg
+  time <- getPOSIXTime
+  msg <- processFrontendMsg <$> WS.receiveData conn
+  case msg of
+    Just (m, rep) -> do
+      WS.sendTextData conn . A.encode $ rep
+      communicateEvent mstate mcomms m uuid time
+    Nothing -> print $ "Error in parsing " ++ show msg
 
-communicateEvent :: MState -> MComms -> FrontendMsg -> UUid User -> TC.UTCTime -> IO ()
+communicateEvent :: MState -> MComms -> FrontendMsg -> UUid User -> POSIXTime -> IO ()
 communicateEvent mstate mcomms msg uuid time = do
   frontendReplies <- addEventToMState mstate msg uuid time
   forM_ frontendReplies (sendReplies mcomms)
@@ -75,7 +76,7 @@ sendReplies mcomms (users, reply) = do
   let usersWS = M.elems $ M.intersection comms (M.fromSet id users)
   forM_ usersWS (`WS.sendTextData` repJSON)
 
-addEventToMState :: MState -> FrontendMsg -> UUid User -> TC.UTCTime -> IO FrontendReplies
+addEventToMState :: MState -> FrontendMsg -> UUid User -> POSIXTime -> IO FrontendReplies
 addEventToMState mstate event uuid time = modifyMVar mstate $ return . addEventToState event uuid time
 
 addUserToMState :: WS.Connection -> MState -> MComms -> IO (Name, UUid User)

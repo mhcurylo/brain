@@ -1,11 +1,10 @@
 import { Place, State } from '../../../state/state.interface';
 import { CanonicalAction } from './actions.interface';
 
-export const canonicalAction = (state: State, {payload: {originalUrl, canonicalUrl}}: CanonicalAction) => {
-    const canonical = state.canonical;
+export const canonicalAction = (state: State, {payload}: CanonicalAction) => {
 
     // To do: use immutable map.
-    canonical.set(originalUrl, canonicalUrl);
+    const canonical = state.canonical.set(payload.original, payload.canonical);
 
     return {...state, canonical};
 }

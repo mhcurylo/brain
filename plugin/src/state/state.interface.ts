@@ -1,3 +1,5 @@
+import { fmap, Maybe } from '../libs/maybe';
+
 export interface Place {
     readonly title: string;
     readonly url: string;
@@ -26,3 +28,5 @@ export interface State {
     readonly pages: Pages;
     readonly who: string;
 }
+
+export const getCanonicalUrl = (state: State) => fmap((_url: string): Maybe<string> => state.canonical.get(_url));
