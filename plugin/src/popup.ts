@@ -14,7 +14,9 @@ const updateState = (newState: State): void => {
     const canonicalUrl = getCanonicalUrl(newState);
 
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
-        const url: Maybe<string> = canonicalUrl(tabs[0].url);
+        const tabUrl = tabs[0] ? tabs[0].url : null;
+
+        const url: Maybe<string> = canonicalUrl(tabUrl);
         setState(url);
         shouldRedraw = true;
     });
@@ -35,7 +37,7 @@ drawLoop();
 const onUnload = (): void => {
     if (viewState && background) {
         const place: Place = viewState.at;
-        const shown: number = new Date().getTime();
+        const shown: number = new Date().getTime() / 1000;
 
         (background as any).next(pageShownEvent(place, shown));
     }
