@@ -35,6 +35,7 @@ library
                      , bytestring
                      , QuickCheck
                      , lens
+                     , blaze-markup >= 0.7
   default-language:    Haskell2010
 
 executable brain-backend-exe
@@ -61,6 +62,7 @@ test-suite brain-backend-test
                      , text
                      , time
                      , lens
+                     , blaze-markup >= 0.7
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
 

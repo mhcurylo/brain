@@ -11,6 +11,7 @@ const fuse = FuseBox.init({
 
 fuse.bundle({
   "chrome/background.js": ">background.ts",
+  "chrome/content.js": ">content.ts",
   "chrome/popup.js": ">popup.ts"
 });
 

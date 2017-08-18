@@ -15,10 +15,25 @@ const send = initSockets('ws://localhost:3000', (res: MessageEvent) => {
     if (!(typeof msg === 'string')) {next(msg)};
 });
 
+const sendTabData = ({ url, title }: chrome.tabs.Tab) => send(JSON.stringify({url, title}));
+
 const tabActivated = (activeInfo: chrome.tabs.TabActiveInfo): void => {
-    chrome.tabs.get(activeInfo.tabId, ({ url, title }: chrome.tabs.Tab) => {
-        send(JSON.stringify({url, title}));
-    });
+    chrome.tabs.get(activeInfo.tabId, sendTabData);
+};
+
+const pageLoaded = ({kind}: any) => {
+ if (kind && kind === 'PAGE_LOADED') {
+     chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
+         const tab = tabs[0] ? tabs[0] : null;
+         fmap(sendTabData)(tab);
+     });
+ }
 };
 
 chrome.tabs.onActivated.addListener(tabActivated);
+
+chrome.runtime.onMessage.addListener(
+  (request, sender, sendResponse) => {
+      pageLoaded(request);
+      sendResponse(true);
+});
