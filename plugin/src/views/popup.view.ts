@@ -1,6 +1,17 @@
 import { Page, PageEvent, Place, State } from '../state/state.interface';
 
-const renderPlace = (place: Place): string => `<a href="${place.url}">${place.title}</a>`;
+const escapeHtml = (str: string): string => {
+    if (typeof document !== 'undefined') {
+        const div = document.createElement('div');
+        div.appendChild(document.createTextNode(str));
+
+        return div.innerHTML;
+    } else {
+        return str;
+    }
+}
+
+const renderPlace = (place: Place): string => `<a target="_blank" href="${place.url}">${escapeHtml(place.title)}</a>`;
 
 const renderEventText = (url: string, { who, at, req, from }: PageEvent) => {
     if (url === at.url) {
