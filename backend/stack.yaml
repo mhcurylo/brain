@@ -9,7 +9,7 @@ docker:
 
 image:
   container:
-    base: "fpco/stack-run"
+    base: "fpco/rdr2tls"
     name: "brain/backend"
     entrypoints:
       - brain-backend-exe
