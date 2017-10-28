@@ -55,5 +55,8 @@
     "tslint": "^5.0.0",
     "typescript": "^2.4.2",
     "watch": "^1.0.2"
+  },
+  "dependencies": {
+    "uuidjs": "^3.6.1"
   }
 }
